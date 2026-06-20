@@ -1,0 +1,173 @@
+/* ================================================================
+   FoodSync - Production System Dashboard
+   interactive-additions.css
+   CSS TAMBAHAN — tempel di akhir <style> yang sudah ada,
+   atau hubungkan sebagai <link> setelah stylesheet lama.
+   Tidak menghapus / menimpa style/warna/font yang sudah ada;
+   hanya menambahkan style baru untuk komponen yang belum punya
+   style (modal, popover, validasi, loading, responsive).
+================================================================ */
+
+/* ---------------- 1. Validasi Form (border merah + pesan error) ---------------- */
+.field-invalid {
+    border-color: var(--danger) !important;
+    background: #FFF5F5 !important;
+}
+.field-error-msg {
+    color: var(--danger);
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 6px;
+    display: block;
+}
+
+/* ---------------- 2. State utilitas (loading / disabled / show / hidden) ---------------- */
+.is-loading { opacity: 0.75; cursor: not-allowed; pointer-events: none; }
+.is-disabled, button:disabled { opacity: 0.6; cursor: not-allowed; }
+.hidden { display: none !important; }
+.show { display: block !important; }
+
+.btn-verif:disabled {
+    background-color: #E5E7EB;
+    color: #6B7280;
+    cursor: not-allowed;
+}
+
+/* ---------------- 3. Focus accessibility ---------------- */
+button:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, .nav-item:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ---------------- 4. Modal Overlay (Detail / Update Progress) ---------------- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+    animation: fadeIn 0.2s ease;
+}
+.modal-box {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 28px;
+    width: 420px;
+    max-width: 90vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-sm);
+}
+.modal-box h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--text-dark);
+}
+.modal-box .modal-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 14px;
+}
+.modal-box .modal-row:last-of-type { border-bottom: none; }
+.modal-box .modal-row span:first-child { color: var(--text-gray); font-weight: 500; }
+.modal-box .modal-row span:last-child { font-weight: 700; color: var(--text-main); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+/* ---------------- 5. Popover menu kanban (titik tiga) ---------------- */
+.card-menu-popover {
+    position: absolute;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    padding: 8px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    min-width: 190px;
+    border: 1px solid var(--border-light);
+}
+.card-menu-popover button {
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-main);
+}
+.card-menu-popover button:hover { background: var(--primary-light); color: var(--primary); }
+
+/* ---------------- 6. Popover filter Riwayat Produksi ---------------- */
+.riwayat-filter-popover {
+    position: absolute;
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    padding: 18px;
+    width: 260px;
+    z-index: 2000;
+    border: 1px solid var(--border-light);
+}
+
+/* ---------------- 7. Pesan "data tidak ditemukan" untuk search ---------------- */
+.search-no-result-msg {
+    text-align: center;
+    color: var(--text-gray);
+    font-weight: 600;
+    padding: 30px 0;
+}
+
+/* ---------------- 8. Tombol hamburger sidebar (mobile) ---------------- */
+.sidebar-toggle-btn { display: none; margin-right: 12px; }
+
+/* ---------------- 9. Cetak PDF (print) ---------------- */
+@media print {
+    .sidebar, .top-header, .pagination, .riwayat-pagination,
+    .dropdown-modal, #toast, .card-menu-popover, .riwayat-filter-popover {
+        display: none !important;
+    }
+    .main-wrapper { margin-left: 0 !important; max-width: 100% !important; }
+}
+
+/* ---------------- 10. Responsif (tablet & mobile) ---------------- */
+@media (max-width: 1024px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .kanban-board { grid-template-columns: 1fr; }
+    .input-split-layout { grid-template-columns: 1fr; }
+    .profile-info-col { grid-template-columns: 1fr; }
+    .po-form-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        transform: translateX(-110%);
+        transition: transform 0.3s ease;
+        z-index: 500;
+    }
+    .sidebar.mobile-open { transform: translateX(0); }
+    .main-wrapper { margin-left: 0; max-width: 100vw; padding: 20px; }
+    .sidebar-toggle-btn { display: flex; }
+    .search-bar { width: 200px; }
+    .user-info { display: none; }
+}
+
+@media (max-width: 480px) {
+    .dropdown-modal { width: calc(100vw - 32px) !important; right: 8px !important; left: auto; }
+    .modal-box { width: calc(100vw - 32px); padding: 20px; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .stats-summary-grid { grid-template-columns: 1fr; }
+    .riwayat-filter-popover { width: calc(100vw - 40px); }
+    .top-header { flex-wrap: wrap; gap: 10px; }
+}

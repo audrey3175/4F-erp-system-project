@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Production Page</title>
+<style>
+  /* --- STYLING HALAMAN PRODUCTION --- */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #f0f4f8; 
+    color: #333;
+  }
+  
+  .navbar {
+    background: #003E7B; color: white; padding: 20px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .main-content { padding: 40px; text-align: center; }
+
+  .btn-trigger-logout {
+    padding: 10px 20px; background: #BB0013; color: white;
+    border: none; border-radius: 8px; cursor: pointer; font-weight: bold;
+  }
+
+  /* --- STYLING OVERLAY & MODAL LOGOUT --- */
+  #logout-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4); 
+    backdrop-filter: blur(5px); 
+    display: none; /* Disembunyikan secara default */
+    justify-content: center; align-items: center;
+    z-index: 1000; 
+  }
+
+  .modal {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+    border-radius: 50px;
+    padding: 50px 40px;
+    width: 90%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .modal img.icon { width: 90px; height: auto; margin-bottom: 20px; }
+
+  .modal h2 { color: #003E7B; font-size: 26px; font-weight: 800; margin-bottom: -5px; letter-spacing: -0.5px; }
+  .modal h1 { color: #003E7B; font-size: 46px; font-weight: 900; margin-bottom: 35px; letter-spacing: -1px; line-height: 1.1; }
+
+  .button-group { display: flex; flex-direction: column; gap: 15px; width: 85%; }
+
+  .btn {
+    width: 100%; padding: 14px 0; border-radius: 50px; font-size: 22px;
+    font-family: inherit; font-weight: 700; cursor: pointer;
+    border: 3px solid #BB0013; box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+  }
+  .btn:active { transform: scale(0.96); }
+
+  .btn-no { background: linear-gradient(139deg, #FF001A 0%, #550009 100%); color: white; }
+  .btn-no:hover { box-shadow: 0px 10px 20px rgba(85, 0, 9, 0.4); }
+
+  .btn-yes { background: white; color: #003E7B; }
+  .btn-yes:hover { background: #F8F9FA; }
+
+  @media (max-width: 480px) {
+    .modal { padding: 40px 25px; border-radius: 40px; }
+    .modal h2 { font-size: 22px; }
+    .modal h1 { font-size: 38px; }
+    .btn { font-size: 18px; padding: 12px 0; }
+    .modal img.icon { width: 75px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="navbar">
+    <h2>Dashboard Production</h2>
+    <button class="btn-trigger-logout" id="btn-trigger">Logout</button>
+  </div>
+
+  <div class="main-content">
+    <h1>Selamat Datang di Halaman Production</h1>
+    <p>Ini adalah konten utama dari sistem production Anda.</p>
+  </div>
+
+  <div id="logout-overlay">
+    <div class="modal">
+      <img src="image_2f311b.png" alt="Logout Icon" class="icon">
+      
+      <h2>Are you sure want to</h2>
+      <h1>logging out?</h1>
+      
+      <div class="button-group">
+        <button class="btn btn-no" id="btn-no">NO</button>
+        <button class="btn btn-yes" id="btn-yes">YES</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const btnTrigger = document.getElementById('btn-trigger');
+    const overlay = document.getElementById('logout-overlay');
+    const btnNo = document.getElementById('btn-no');
+    const btnYes = document.getElementById('btn-yes');
+
+    // 1. Tampilkan modal saat tombol "Logout" di navbar diklik
+    btnTrigger.addEventListener('click', function() {
+      overlay.style.display = 'flex'; 
+    });
+
+    // 2. Sembunyikan modal saat tombol "NO" diklik (Batal Logout)
+    btnNo.addEventListener('click', function() {
+      overlay.style.display = 'none'; 
+    });
+
+    // 3. Arahkan ke halaman login saat tombol "YES" diklik
+    btnYes.addEventListener('click', function() {
+      window.location.href = 'login.html'; 
+    });
+
+    // 4. Tutup pop-up jika area gelap (overlay) di luar modal diklik
+    overlay.addEventListener('click', function(event) {
+      if (event.target === overlay) {
+        overlay.style.display = 'none';
+      }
+    });
+  </script>
+
+</body>
+</html>
