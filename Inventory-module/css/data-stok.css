@@ -1,0 +1,127 @@
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Open Sans', sans-serif; }
+body { display: flex; background-color: #f4f7fe; color: #2b3674; height: 100vh; overflow: hidden; }
+
+/* --- SIDEBAR (Sudah diperkecil sama seperti Dashboard) --- */
+.sidebar { width: 220px; background-color: white; height: 100vh; position: fixed; top: 0; left: 0; display: flex; flex-direction: column; padding: 20px 15px; border-right: 1px solid #e9edf7; z-index: 100; }
+.sidebar-logo { text-align: center; margin-bottom: 30px; }
+.sidebar-logo img { max-width: 130px; }
+.menu-label { font-size: 0.65rem; color: #a3aed1; font-weight: 700; margin-bottom: 15px; letter-spacing: 1px; padding-left: 5px; }
+.sidebar-menu { list-style: none; flex-grow: 1; }
+.sidebar-menu li { margin-bottom: 5px; }
+.sidebar-menu a { display: flex; align-items: center; padding: 10px 12px; color: #a3aed1; text-decoration: none; font-size: 0.75rem; font-weight: 600; border-radius: 8px; transition: all 0.3s; }
+.sidebar-menu a i { width: 22px; font-size: 0.9rem; }
+.sidebar-menu li.active a, .sidebar-menu a:hover { background-color: #f4f7fe; color: #2b3674; }
+.sidebar-bottom { display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-bottom: 20px; }
+.help-btn { text-decoration: none; color: #2b3674; font-weight: 600; font-size: 0.75rem; display: flex; align-items: center; gap: 10px; padding-left: 5px; }
+.logout-btn { background-color: #c8102e; color: white; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.8rem; }
+
+/* --- MAIN CONTENT --- */
+.main-content { margin-left: 220px; flex: 1; height: 100vh; padding: 30px 40px; overflow-y: auto; }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+.search-bar { background: white; border-radius: 20px; padding: 8px 20px; display: flex; align-items: center; width: 300px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+.search-bar input { border: none; outline: none; margin-left: 10px; width: 100%; color: #2b3674; font-size: 0.85rem; }
+.user-profile { display: flex; align-items: center; gap: 15px; }
+.icon-action { font-size: 1.1rem; color: #a3aed1; cursor: pointer; }
+.user-info { text-align: right; line-height: 1.2; }
+.user-name { display: block; font-weight: 700; font-size: 0.85rem; }
+.user-role { font-size: 0.7rem; color: #a3aed1; }
+.profile-pic { font-size: 2.2rem; color: #2b3674; }
+
+/* --- HEADER & TABS --- */
+.page-header h2 { font-size: 1.6rem; color: #2b3674; margin-bottom: 5px; }
+.page-header p { color: #a3aed1; font-size: 0.85rem; margin-bottom: 20px; }
+
+.page-tabs { display: flex; gap: 30px; border-bottom: 2px solid #e9edf7; margin-bottom: 25px; }
+.tab { text-decoration: none; color: #a3aed1; font-weight: 600; font-size: 0.9rem; padding-bottom: 10px; position: relative; transition: color 0.3s; }
+.tab:hover { color: #2b3674; }
+.tab.active { color: #3b82f6; }
+.tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px; background-color: #3b82f6; }
+
+/* --- FILTER BAR --- */
+.filter-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.filter-group { display: flex; gap: 15px; }
+.filter-select { padding: 8px 15px; border: 1px solid #e9edf7; border-radius: 8px; font-size: 0.85rem; color: #2b3674; outline: none; background: white; cursor: pointer; }
+.search-input { display: flex; align-items: center; background: white; padding: 8px 15px; border-radius: 8px; border: 1px solid #e9edf7; width: 250px; }
+.search-input input { border: none; outline: none; width: 100%; font-size: 0.85rem; color: #2b3674; }
+.search-input i { color: #a3aed1; }
+
+.action-group { display: flex; gap: 10px; }
+.btn-outline { background: white; border: 1px solid #e9edf7; padding: 8px 20px; border-radius: 8px; color: #2b3674; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+.btn-outline:hover { background: #f4f7fe; }
+.icon-only { padding: 8px 15px; }
+
+/* --- KPI CARDS --- */
+.kpi-container { display: flex; justify-content: space-between; gap: 15px; margin-bottom: 25px; }
+.kpi-card { background: white; padding: 15px; border-radius: 12px; flex: 1; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); min-width: 0; }
+.kpi-icon { width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; color: white; flex-shrink: 0; }
+.blue { background-color: #3b82f6; } .green { background-color: #10b981; } .orange { background-color: #f59e0b; } .pink { background-color: #ec4899; }
+.kpi-data { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kpi-data span { font-size: 0.65rem; font-weight: 700; color: #a3aed1; letter-spacing: 0.5px; display: block; margin-bottom: 2px; }
+.kpi-data h3 { font-size: 1.2rem; color: #2b3674; }
+.kpi-data small { font-size: 0.75rem; font-weight: 400; color: #a3aed1; }
+
+/* --- SPLIT LAYOUT (Tabel vs Detail) --- */
+.split-layout { display: flex; gap: 20px; }
+.table-panel { flex: 2.5; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+.side-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+
+/* --- TABEL DATA --- */
+.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.data-table th, .data-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #f4f7fe; }
+.data-table th { color: #a3aed1; font-weight: 600; }
+.data-table tbody tr { cursor: pointer; transition: background 0.2s; }
+.data-table tbody tr:hover { background-color: #f8fafc; }
+.fw-bold { font-weight: 600; color: #2b3674; }
+
+.text-danger { color: #ec4899; font-weight: 700; }
+.text-warning { color: #f59e0b; font-weight: 700; }
+.text-green { color: #10b981; font-weight: 700; }
+.text-blue { color: #3b82f6; cursor: pointer; }
+.text-gray { color: #a3aed1; cursor: pointer; }
+.action-icons { display: flex; gap: 10px; font-size: 1.1rem; }
+
+.badge { padding: 5px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; }
+.badge-blue { background: #e0f2fe; color: #0284c7; }
+.badge-green { background: #dcfce3; color: #16a34a; }
+.badge-orange { background: #ffedd5; color: #ea580c; }
+.badge-danger { background: #fce8f3; color: #ec4899; }
+.badge-success { background: #d1fae5; color: #10b981; }
+.badge-warning { background: #fef3c7; color: #f59e0b; }
+
+.pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-size: 0.8rem; }
+.page-info { color: #a3aed1; }
+.page-numbers { display: flex; gap: 5px; }
+.page-btn { border: 1px solid #e9edf7; background: white; color: #2b3674; width: 30px; height: 30px; border-radius: 5px; cursor: pointer; font-weight: 600; }
+.page-btn.active { background: #3b82f6; color: white; border: none; }
+
+/* --- KARTU DETAIL BARANG & NOTIFIKASI --- */
+.detail-card, .notification-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+
+.detail-header, .notif-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.detail-header h4, .notif-header h4 { font-size: 0.95rem; color: #2b3674; font-weight: 700; }
+.close-icon { color: #a3aed1; cursor: pointer; font-size: 1.1rem; }
+
+.product-info { display: flex; gap: 15px; align-items: center; margin-bottom: 20px; }
+.product-img { width: 55px; height: 55px; background: #f4f7fe; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; color: #a3aed1; }
+.prod-code { font-size: 0.7rem; color: #a3aed1; font-weight: 600; }
+.product-title h5 { font-size: 0.9rem; color: #2b3674; margin: 3px 0; }
+.mt-1 { margin-top: 5px; display: inline-block; }
+
+.detail-list { list-style: none; margin-bottom: 20px; }
+.detail-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #e9edf7; font-size: 0.8rem; }
+.detail-list li span { color: #a3aed1; }
+.detail-list li strong { color: #2b3674; }
+
+.warehouse-stock { background: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+.warehouse-stock h6 { font-size: 0.8rem; color: #2b3674; margin-bottom: 10px; }
+.wh-item { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; }
+.wh-item span { color: #a3aed1; }
+
+.btn-full { width: 100%; padding: 10px; border: 1px solid #e9edf7; background: white; color: #2b3674; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 0.8rem; transition: 0.2s; }
+.btn-full:hover { background: #f4f7fe; }
+
+.notif-badge { background: #ec4899; color: white; font-size: 0.65rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+.notif-list { list-style: none; }
+.notif-list li { margin-bottom: 15px; }
+.notif-list strong { display: block; font-size: 0.8rem; color: #2b3674; margin-bottom: 2px; }
+.notif-list span { font-size: 0.7rem; color: #a3aed1; }

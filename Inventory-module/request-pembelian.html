@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Pembelian - FoodSync</title>
+    <script type="module" src="js/auth-guard.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/request-pembelian.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/new logo (1).png" alt="FoodSync Logo">
+        </div>
+        
+        <p class="menu-label">MENU</p>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+            <li><a href="data-stok.html"><i class="fas fa-database"></i> Data Stok & Monitoring</a></li>
+            <li class="active"><a href="request-pembelian.html"><i class="fas fa-shopping-cart"></i> Request Pembelian Bahan Baku</a></li>
+            <li><a href="penerimaan-bahan.html"><i class="fas fa-download"></i> Penerimaan Bahan Baku</a></li>
+            <li><a href="pengeluaran-produksi.html"><i class="fas fa-box-open"></i> Pengeluaran Produksi</a>
+            <li><a href="barang-jadi.html"><i class="fas fa-boxes"></i> Barang Jadi (FG)</a></li>
+            <li><a href="mutasi-laporan.html"><i class="fas fa-clipboard-list"></i> Mutasi & Laporan</a></li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <a href="#" class="help-btn"><i class="far fa-question-circle"></i> Help Center</a>
+            <a href="#" class="logout-btn" onclick="logoutUser(); return false;">Logout</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search employee or data...">
+            </div>
+            <div class="user-profile">
+                <i class="fas fa-cog icon-action"></i>
+                <i class="far fa-bell icon-action"></i>
+                <div class="user-info">
+                    <span class="user-name" id="topbarUserName">Thariq Hapisz</span>
+                    <span class="user-role">Staff Gudang</span>
+                </div>
+                <i class="fas fa-user-circle profile-pic"></i>
+            </div>
+        </header>
+
+        <div class="page-header">
+            <h2>Request Pembelian Bahan Baku</h2>
+            <p>Kelola request pembelian (PR) & Purchase Order (PO)</p>
+            <div class="page-tabs">
+                <a href="#" class="tab active">Request Pembelian (PR)</a>
+            </div>
+        </div>
+
+        <div class="kpi-mini-container">
+            <div class="kpi-mini">
+                <div class="kpi-icon blue"><i class="fas fa-file-invoice"></i></div>
+                <div class="kpi-info"><span>TOTAL PR</span><strong id="kpiTotalPr">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon green"><i class="fas fa-check-circle"></i></div>
+                <div class="kpi-info"><span>DISETUJUI</span><strong id="kpiDisetujui">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon yellow"><i class="fas fa-clock"></i></div>
+                <div class="kpi-info"><span>MENUNGGU</span><strong id="kpiMenunggu">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon red"><i class="fas fa-times-circle"></i></div>
+                <div class="kpi-info"><span>DITOLAK</span><strong id="kpiDitolak">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon purple"><i class="fas fa-file-signature"></i></div>
+                <div class="kpi-info"><span>TOTAL PO</span><strong id="kpiTotalPo">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon teal"><i class="fas fa-paper-plane"></i></div>
+                <div class="kpi-info"><span>PO TERKIRIM</span><strong id="kpiPoTerkirim">0</strong></div>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <input type="date" class="filter-input" id="filterTanggal">
+                <select class="filter-select" id="filterStatus">
+                    <option value="">Semua Status</option>
+                    <option value="Menunggu">Menunggu</option>
+                    <option value="Disetujui">Disetujui</option>
+                    <option value="Ditolak">Ditolak</option>
+                </select>
+                <select class="filter-select" id="filterVendor">
+                    <option value="">Semua Vendor</option>
+                </select>
+                <div class="search-input">
+                    <input type="text" id="searchInput" placeholder="Cari nomor PR / vendor...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <button class="btn-outline icon-only" onclick="resetFilters()"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <div class="action-group">
+                <button class="btn-outline"><i class="fas fa-file-export"></i> Export</button>
+                <button class="btn-primary" onclick="openModal()"><i class="fas fa-plus"></i> Buat PR Baru</button>
+            </div>
+        </div>
+
+        <div class="split-layout">
+            <div class="table-panel">
+                <div class="box-header"><h4>Daftar Request Pembelian</h4></div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No PR</th>
+                            <th>Tanggal</th>
+                            <th>Vendor</th>
+                            <th>Total Item</th>
+                            <th>Total Estimasi</th>
+                            <th>Status</th>
+                            <th>Dibuat Oleh</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="side-panel">
+                <div class="summary-card">
+                    <div class="box-header"><h4>Ringkasan PO</h4></div>
+                    <ul class="summary-list">
+                        <li><span>Draft</span> <strong class="text-blue">4</strong></li>
+                        <li><span>Menunggu Konfirmasi</span> <strong class="text-blue">3</strong></li>
+                        <li><span>Dikonfirmasi</span> <strong class="text-blue">9</strong></li>
+                        <li><span>Terkirim ke Vendor</span> <strong class="text-blue">18</strong></li>
+                        <li><span>Selesai</span> <strong class="text-blue">9</strong></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="prModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Form Request Pembelian</h3>
+                <i class="fas fa-times close-modal" onclick="closeModal()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <select class="form-input flex-2" id="prVendor">
+                        <option value="PT. Sumber Bahan Utama">PT. Sumber Bahan Utama</option>
+                        <option value="PT. Indofood Sukses Makmur">PT. Indofood Sukses Makmur</option>
+                        <option value="PT. Aroma Pangan Utama">PT. Aroma Pangan Utama</option>
+                    </select>
+                    <input type="date" class="form-input flex-1" id="prTanggal">
+                </div>
+                <div class="form-row mt-3">
+                    <textarea class="form-input w-100" id="prCatatan" rows="3" placeholder="Masukkan kebutuhan pembelian..."></textarea>
+                </div>
+                
+                <div class="items-header mt-4">
+                    <span class="flex-2">Barang</span>
+                    <span class="flex-1 text-center">Qty Request</span>
+                    <span class="w-50px text-center">Aksi</span>
+                </div>
+                
+                <div id="prItemsContainer">
+                </div>
+
+                <button type="button" class="btn-text mt-2" onclick="tambahBarisItem()"><i class="fas fa-plus"></i> Tambah Barang</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline mr-2" onclick="closeModal()">Batal</button>
+                <button type="button" class="btn-primary" onclick="simpanPr()">Simpan & Proses</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Detail Request Pembelian</h3>
+                <i class="fas fa-times close-modal" onclick="closeModalDetail()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="info-grid mb-4">
+                    <div>
+                        <span class="text-muted block text-xs">No. PR</span>
+                        <strong class="text-sm" id="detPrNo">PR-XXXX</strong>
+                    </div>
+                    <div>
+                        <span class="text-muted block text-xs">Tanggal</span>
+                        <strong class="text-sm" id="detPrTanggal">20 Mei 2026</strong>
+                    </div>
+                    <div>
+                        <span class="text-muted block text-xs">Vendor</span>
+                        <strong class="text-sm" id="detPrVendor">PT. Indofood</strong>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Barang</th>
+                            <th class="text-center">Qty Request</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detPrTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer flex-between">
+                <div id="approvalActions">
+                </div>
+                <div>
+                    <button type="button" class="btn-primary" onclick="closeModalDetail()">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/request-pembelian.js"></script>
+<script src="js/user.js"></script></body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengeluaran Produksi - FoodSync</title>
+    <script type="module" src="js/auth-guard.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/pengeluaran-produksi.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/new logo (1).png" alt="FoodSync Logo">
+        </div>
+        
+        <p class="menu-label">MENU</p>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+            <li><a href="data-stok.html"><i class="fas fa-database"></i> Data Stok & Monitoring</a></li>
+            <li><a href="request-pembelian.html"><i class="fas fa-shopping-cart"></i> Request Pembelian Bahan Baku</a></li>
+            <li><a href="penerimaan-bahan.html"><i class="fas fa-download"></i> Penerimaan Bahan Baku</a></li>
+            <li><a href="pengeluaran-produksi.html"><i class="fas fa-box-open"></i> Pengeluaran Produksi</a></li>
+            <li><a href="barang-jadi.html"><i class="fas fa-boxes"></i> Barang Jadi (FG)</a></li>
+            <li><a href="mutasi-laporan.html"><i class="fas fa-clipboard-list"></i> Mutasi & Laporan</a></li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <a href="#" class="help-btn"><i class="far fa-question-circle"></i> Help Center</a>
+            <a href="#" class="logout-btn" onclick="logoutUser(); return false;">Logout</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search employee or data...">
+            </div>
+            <div class="user-profile">
+                <i class="fas fa-cog icon-action"></i>
+                <i class="far fa-bell icon-action"></i>
+                <div class="user-info">
+                    <span class="user-name" id="topbarUserName">Thariq Hapisz</span>
+                    <span class="user-role">Staff Gudang</span>
+                </div>
+                <i class="fas fa-user-circle profile-pic"></i>
+            </div>
+        </header>
+
+        <div class="page-header">
+            <h2>Pengeluaran Bahan Baku ke Produksi</h2>
+            <p>Kelola pengeluaran bahan baku dari gudang ke divisi produksi</p>
+            <div class="page-tabs">
+                <a href="#" class="tab active">Pengeluaran Produksi</a>
+            </div>
+        </div>
+
+        <div class="kpi-mini-container">
+            <div class="kpi-mini">
+                <div class="kpi-icon blue"><i class="fas fa-clipboard-list"></i></div>
+                <div class="kpi-info"><span>TOTAL ISSUE</span><strong id="kpiTotalIssue">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon green"><i class="fas fa-check-circle"></i></div>
+                <div class="kpi-info"><span>DISETUJUI</span><strong id="kpiDisetujui">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon yellow"><i class="fas fa-clock"></i></div>
+                <div class="kpi-info"><span>MENUNGGU</span><strong id="kpiMenunggu">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon red"><i class="fas fa-times-circle"></i></div>
+                <div class="kpi-info"><span>DITOLAK</span><strong id="kpiDitolak">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon teal"><i class="fas fa-boxes"></i></div>
+                <div class="kpi-info"><span>TOTAL MATERIAL</span><strong id="kpiTotalMaterial">0</strong></div>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <input type="date" class="filter-input" id="filterTanggal" value="2026-05-01">
+                <select class="filter-select" id="filterDept"><option value="">Semua Departemen</option></select>
+                <div class="search-input">
+                    <input type="text" id="searchInput" placeholder="Cari No. Issue / Departemen...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <button class="btn-outline icon-only" onclick="resetFilters()"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <div class="action-group">
+                <button class="btn-primary" onclick="openModalForm()"><i class="fas fa-plus"></i> Buat Issue</button>
+            </div>
+        </div>
+
+        <div class="split-layout">
+            <div class="table-panel">
+                <div class="box-header"><h4>Daftar Pengeluaran Produksi</h4></div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No. Issue</th>
+                            <th>Tanggal</th>
+                            <th>Departemen</th>
+                            <th>Total Item</th>
+                            <th>Total Qty</th>
+                            <th>Status</th>
+                            <th>Requestor</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="side-panel">
+                <div class="summary-card mb-4">
+                    <div class="box-header"><h4>Ringkasan Produksi</h4></div>
+                    <ul class="summary-list">
+                        <li><span>Total Issue Bulan Ini</span> <strong id="summaryTotalIssue">0</strong></li>
+                        <li><span>Dalam Proses</span> <strong id="summaryDalamProses">0</strong></li>
+                        <li><span>Menunggu Verifikasi</span> <strong class="text-warning" id="summaryMenunggu">0</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="box-header"><h4>Monitoring Issue</h4></div>
+                    
+                    <div class="progress-item">
+                        <div class="progress-label"><span>Produksi Mie</span> <strong id="valMie">0%</strong></div>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill blue" id="barMie" style="width: 0%;"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label"><span>Produksi Bumbu</span> <strong id="valBumbu">0%</strong></div>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill green" id="barBumbu" style="width: 0%;"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label"><span>Produksi Packing</span> <strong id="valPacking">0%</strong></div>
+                        <div class="progress-bar-bg"><div class="progress-bar-fill yellow" id="barPacking" style="width: 0%;"></div></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="formModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Form Pengeluaran Produksi</h3>
+                <i class="fas fa-times close-modal" onclick="closeModalForm()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <input type="text" class="form-input flex-1" id="issDept" placeholder="Nama Departemen (Contoh: Produksi Mie)">
+                    <input type="date" class="form-input flex-1" id="issTanggal">
+                </div>
+                <div class="form-row mt-3">
+                    <textarea class="form-input w-100" id="issCatatan" rows="3" placeholder="Masukkan kebutuhan produksi..."></textarea>
+                </div>
+                
+                <div class="items-header mt-4">
+                    <span class="flex-2">Bahan Baku</span>
+                    <span class="flex-1 text-center">Qty Keluar</span>
+                    <span class="w-50px text-center">Aksi</span>
+                </div>
+                
+                <div id="issItemsContainer">
+                </div>
+
+                <button type="button" class="btn-text mt-3" onclick="tambahBarisItem()"><i class="fas fa-plus"></i> Tambah Material</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline mr-2" onclick="closeModalForm()">Batal</button>
+                <button type="button" class="btn-primary" onclick="simpanIssue()">Proses Pengeluaran</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Detail Pengeluaran Produksi</h3>
+                <i class="fas fa-times close-modal" onclick="closeModalDetail()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="info-grid mb-4">
+                    <div>
+                        <span class="text-muted block text-xs">No. Issue</span>
+                        <strong class="text-sm" id="detIssNo">ISS-XXXX</strong>
+                    </div>
+                    <div>
+                        <span class="text-muted block text-xs">Tanggal</span>
+                        <strong class="text-sm" id="detIssTanggal">20 Mei 2026</strong>
+                    </div>
+                    <div>
+                        <span class="text-muted block text-xs">Departemen</span>
+                        <strong class="text-sm" id="detIssDept">Produksi Mie</strong>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th class="text-center">Qty Keluar</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detIssTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer flex-between">
+                <div>
+                </div>
+                <div>
+                    <button type="button" class="btn-primary" onclick="closeModalDetail()">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/pengeluaran-produksi.js"></script>
+<script src="js/user.js"></script></body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FoodSync</title>
+    <script type="module" src="js/auth-guard.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/new logo (1).png" alt="FoodSync Logo">
+        </div>
+        
+        <p class="menu-label">MENU</p>
+        <ul class="sidebar-menu">
+            <li class="active"><a href="#"><i class="fas fa-th-large"></i> Dashboard</a></li>
+            <li><a href="data-stok.html"><i class="fas fa-database"></i> Data Stok & Monitoring</a></li>
+            <li><a href="request-pembelian.html"><i class="fas fa-shopping-cart"></i> Request Pembelian Bahan Baku</a></li>
+            <li><a href="penerimaan-bahan.html"><i class="fas fa-download"></i> Penerimaan Bahan Baku</a></li>
+            <li><a href="pengeluaran-produksi.html"><i class="fas fa-box-open"></i> Pengeluaran Produksi</a></li>
+            <li><a href="barang-jadi.html"><i class="fas fa-boxes"></i> Barang Jadi (FG)</a></li>
+            <li><a href="mutasi-laporan.html"><i class="fas fa-clipboard-list"></i> Mutasi & Laporan</a></li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <a href="#" class="help-btn"><i class="far fa-question-circle"></i> Help Center</a>
+            <a href="#" class="logout-btn" onclick="logoutUser(); return false;">Logout</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search employee or data...">
+            </div>
+            <div class="user-profile">
+                <i class="fas fa-cog icon-action"></i>
+                <i class="far fa-bell icon-action"></i>
+                <div class="user-info">
+                    <span class="user-name" id="topbarUserName">Thariq Hapisz</span>
+                    <span class="user-role">Staff Gudang</span>
+                </div>
+                <i class="fas fa-user-circle profile-pic"></i>
+            </div>
+        </header>
+
+        <div class="page-header">
+            <h2>Dashboard Inventory</h2>
+            <p>Ringkasan informasi stok dan aktivitas inventory</p>
+        </div>
+
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <div class="kpi-icon blue"><i class="fas fa-cube"></i></div>
+                <div class="kpi-data">
+                    <span>TOTAL ITEM</span>
+                    <h3 id="kpiTotalItem">0 <small>Item</small></h3>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon green"><i class="fas fa-arrow-down"></i></div>
+                <div class="kpi-data">
+                    <span>TOTAL STOK</span>
+                    <h3 id="kpiTotalStok">0 <small>Unit</small></h3>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon orange"><i class="fas fa-arrow-up"></i></div>
+                <div class="kpi-data">
+                    <span>BARANG MASUK</span>
+                    <h3 id="kpiBarangMasuk">0 <small>Unit</small></h3>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon pink"><i class="fas fa-arrow-down"></i></div>
+                <div class="kpi-data">
+                    <span>BARANG KELUAR</span>
+                    <h3 id="kpiBarangKeluar">0 <small>Unit</small></h3>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon purple"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="kpi-data">
+                    <span>ALERT STOK</span>
+                    <h3 id="kpiAlertStok">0 <small>Item</small></h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-box main-chart">
+                <div class="chart-header">
+                    <h4>Grafik Stok (6 Bulan Terakhir)</h4>
+                    <div class="chart-legend">
+                        <span class="legend-dot blue-dot"></span> Stok
+                        <span class="legend-dot green-dot"></span> Masuk
+                        <span class="legend-dot pink-dot"></span> Keluar
+                    </div>
+                </div>
+                <canvas id="lineChart"></canvas>
+            </div>
+            
+            <div class="chart-box side-chart">
+                <h4>Distribusi Stok</h4>
+                <div class="donut-container">
+                    <canvas id="donutChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-container">
+            <div class="table-box">
+                <div class="box-header">
+                    <h4>Stok Minimum</h4>
+                    <a href="#">Lihat Semua</a>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Nama Barang</th>
+                            <th>Stok</th>
+                            <th>Minimum</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="minStockTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="activity-box">
+                <div class="box-header">
+                    <h4>Aktivitas Terbaru</h4>
+                    <a href="#">Lihat Semua</a>
+                </div>
+                <ul class="activity-list" id="recentActivityList">
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="js/dashboard.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const activeUser = JSON.parse(localStorage.getItem('foodsync_active_user'));
+            if (activeUser) {
+                const namaLengkap = activeUser.firstName + " " + activeUser.lastName;
+                const topbarNameElement = document.getElementById('topbarUserName');
+                if (topbarNameElement) {
+                    topbarNameElement.textContent = namaLengkap;
+                }
+            }
+        });
+    </script>
+
+<script src="js/user.js"></script></body>
+</html>

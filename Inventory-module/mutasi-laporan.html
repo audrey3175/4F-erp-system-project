@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutasi & Laporan - FoodSync</title>
+    <script type="module" src="js/auth-guard.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/mutasi-laporan.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/new logo (1).png" alt="FoodSync Logo">
+        </div>
+        
+        <p class="menu-label">MENU</p>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+            <li><a href="data-stok.html"><i class="fas fa-database"></i> Data Stok & Monitoring</a></li>
+            <li><a href="request-pembelian.html"><i class="fas fa-shopping-cart"></i> Request Pembelian Bahan Baku</a></li>
+            <li><a href="penerimaan-bahan.html"><i class="fas fa-download"></i> Penerimaan Bahan Baku</a></li>
+            <li><a href="pengeluaran-produksi.html"><i class="fas fa-box-open"></i> Pengeluaran Produksi</a></li>
+            <li><a href="barang-jadi.html"><i class="fas fa-boxes"></i> Barang Jadi (FG)</a></li>
+            <li class="active"><a href="mutasi-laporan.html"><i class="fas fa-clipboard-list"></i> Mutasi & Laporan</a></li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <a href="#" class="help-btn"><i class="far fa-question-circle"></i> Help Center</a>
+            <a href="#" class="logout-btn" onclick="logoutUser(); return false;">Logout</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search employee or data...">
+            </div>
+            <div class="user-profile">
+                <i class="fas fa-cog icon-action"></i>
+                <i class="far fa-bell icon-action"></i>
+                <div class="user-info">
+                    <span class="user-name" id="topbarUserName">Thariq Hapisz</span>
+                    <span class="user-role">Staff Gudang</span>
+                </div>
+                <i class="fas fa-user-circle profile-pic"></i>
+            </div>
+        </header>
+        
+        <div class="page-header">
+            <h2>Mutasi & Laporan Inventory</h2>
+            <p>Rekapitulasi mutasi barang dan laporan persediaan periodik</p>
+            <div class="page-tabs">
+                <a href="#" class="tab active">Mutasi & Laporan</a>
+            </div>
+        </div>
+
+        <div class="kpi-mini-container">
+            <div class="kpi-mini">
+                <div class="kpi-icon blue"><i class="fas fa-sync"></i></div>
+                <div class="kpi-info"><span>TOTAL MUTASI</span><strong id="kpiTotalMutasi">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon green"><i class="fas fa-sign-in-alt"></i></div>
+                <div class="kpi-info"><span>TOTAL IN</span><strong id="kpiTotalIn">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon pink"><i class="fas fa-sign-out-alt"></i></div>
+                <div class="kpi-info"><span>TOTAL OUT</span><strong id="kpiTotalOut">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon yellow"><i class="fas fa-exclamation-circle"></i></div>
+                <div class="kpi-info"><span>MINIMUM</span><strong id="kpiMinimum">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon purple"><i class="fas fa-wallet"></i></div>
+                <div class="kpi-info"><span>TOTAL NILAI</span><strong id="kpiTotalNilai">0</strong></div>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <input type="date" class="filter-input" id="filterTanggal">
+                <select class="filter-select" id="filterJenis">
+                    <option value="">Semua Jenis</option>
+                    <option value="Masuk">Masuk</option>
+                    <option value="Keluar">Keluar</option>
+                    <option value="Transfer">Transfer</option>
+                </select>
+                <select class="filter-select" id="filterGudang">
+                    <option value="">Semua Gudang</option>
+                    <option value="Gudang Utama">Gudang Utama</option>
+                    <option value="Gudang FG">Gudang FG</option>
+                    <option value="Gudang A1">Gudang A1</option>
+                    <option value="Gudang A2">Gudang A2</option>
+                    <option value="Gudang B1">Gudang B1</option>
+                </select>
+                <div class="search-input">
+                    <input type="text" id="searchInput" placeholder="Cari No. Mutasi / Produk...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <button class="btn-outline icon-only" onclick="resetFilters()"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <div class="action-group">
+                <button class="btn-primary" onclick="openModalForm()"><i class="fas fa-plus"></i> Mutasi Barang</button>
+            </div>
+        </div>
+
+        <div class="split-layout">
+            <div class="table-panel">
+                <div class="box-header"><h4>Data Mutasi Inventory</h4></div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No. Mutasi</th>
+                            <th>Tanggal</th>
+                            <th>Jenis</th>
+                            <th>Barang</th>
+                            <th>Dari</th>
+                            <th>Ke</th>
+                            <th>Qty</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="side-panel">
+                <div class="summary-card mb-4">
+                    <div class="box-header"><h4>Ringkasan Laporan</h4></div>
+                    <ul class="summary-list">
+                        <li><span>Laporan Stok Opname</span> <strong class="text-blue" style="cursor:pointer;" onclick="bukaValuasiModal()"><i class="fas fa-eye"></i></strong></li>
+                        <li><span>Kartu Stok (Stock Card)</span> <strong class="text-blue" style="cursor:pointer;" onclick="bukaValuasiModal()"><i class="fas fa-eye"></i></strong></li>
+                        <li><span>Valuasi Persediaan</span> <strong class="text-blue" style="cursor:pointer;" onclick="bukaValuasiModal()"><i class="fas fa-eye"></i></strong></li>
+                    </ul>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="box-header"><h4>Aktivitas Terbaru</h4></div>
+                    <ul class="activity-mini" id="recentActivityList">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="formModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Formulir Mutasi Barang</h3>
+                <i class="fas fa-times close-modal" onclick="closeModalForm()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <select class="form-input flex-1" id="mutBarang">
+                        <option value="">Pilih Barang</option>
+                    </select>
+                    <input type="date" class="form-input flex-1" id="mutTanggal">
+                </div>
+                <div class="form-row mt-3">
+                    <select class="form-input flex-1" id="mutDari">
+                        <option value="">Dari Gudang</option>
+                        <option value="Gudang Utama">Gudang Utama</option>
+                        <option value="Gudang FG">Gudang FG</option>
+                        <option value="Gudang A1">Gudang A1</option>
+                        <option value="Gudang A2">Gudang A2</option>
+                        <option value="Gudang B1">Gudang B1</option>
+                    </select>
+                    <select class="form-input flex-1" id="mutKe">
+                        <option value="">Ke Gudang</option>
+                        <option value="Gudang Utama">Gudang Utama</option>
+                        <option value="Gudang FG">Gudang FG</option>
+                        <option value="Gudang A1">Gudang A1</option>
+                        <option value="Gudang A2">Gudang A2</option>
+                        <option value="Gudang B1">Gudang B1</option>
+                    </select>
+                </div>
+                <div class="form-row mt-3">
+                    <input type="number" class="form-input flex-1" id="mutQty" placeholder="Jumlah Qty" min="1">
+                    <input type="text" class="form-input flex-2" id="mutCatatan" placeholder="Alasan Mutasi / Catatan">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline mr-2" onclick="closeModalForm()">Batal</button>
+                <button class="btn-primary" onclick="simpanMutasi()">Proses Mutasi</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Detail Laporan Inventory</h3>
+                <i class="fas fa-times close-modal" onclick="closeModalDetail()"></i>
+            </div>
+            <div class="modal-body">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th class="text-center">Stok</th>
+                            <th class="text-center">Harga Est.</th>
+                            <th class="text-center">Total Valuasi</th>
+                            <th class="text-center">Lokasi Gudang</th>
+                            <th>Satuan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer flex-between">
+                <h3 class="text-blue">Total Valuasi: Rp 0</h3>
+                <button class="btn-primary" onclick="closeModalDetail()">Selesai</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/mutasi-laporan.js"></script>
+<script src="js/user.js"></script></body>
+</html>

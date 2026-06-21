@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Portal - FoodSync</title>
+    <script type="module" src="js/auth-guard.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { height: 100vh; display: flex; justify-content: center; align-items: center; background: linear-gradient(135deg, rgba(0, 102, 204, 0.85) 0%, rgba(0, 43, 89, 0.95) 100%), url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat; overflow: hidden; padding: 20px; }
+        .portal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; max-width: 1000px; width: 100%; }
+        .module-card { background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 28px; padding: 40px 30px; color: #FFFFFF; text-decoration: none; transition: all 0.3s ease; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; justify-content: flex-start; cursor: pointer; }
+        .module-card:hover { transform: translateY(-8px); background: rgba(255, 255, 255, 0.2); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); border-color: rgba(255, 255, 255, 0.4); }
+        .icon-box { width: 64px; height: 64px; background-color: #FFFFFF; border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 28px; margin-bottom: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .icon-sales { color: #FF5A1F; } .icon-finance { color: #28A745; } .icon-production { color: #0078FF; } .icon-hr { color: #7C3AED; } .icon-inventory { color: #F5A623; } .icon-purchasing { color: #65A30D; }
+        .module-title { font-size: 28px; font-weight: 800; margin-bottom: 12px; line-height: 1.2; letter-spacing: -0.5px; }
+        .module-desc { font-size: 14px; color: rgba(255, 255, 255, 0.85); line-height: 1.5; font-weight: 400; }
+        @media (max-width: 992px) { .portal-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .portal-grid { grid-template-columns: 1fr; } .module-card { padding: 30px 20px; } .module-title { font-size: 24px; } }
+    </style>
+</head>
+<body>
+
+    <div class="portal-grid">
+        <a href="#" class="module-card" onclick="alert('Modul Sales and Marketing belum tersedia.'); return false;">
+            <div class="icon-box icon-sales"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="module-title">Sales and<br>Marketing</div>
+            <div class="module-desc">Manajemen promosi, monitoring transaksi sales harian, dan analitik performa target retail.</div>
+        </a>
+
+        <a href="#" class="module-card" onclick="alert('Modul Finance belum tersedia.'); return false;">
+            <div class="icon-box icon-finance"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+            <div class="module-title">Finance</div>
+            <div class="module-desc">Manajemen rekonsiliasi faktur, pembukuan jurnal akuntansi, dan kontrol budgeting korporat.</div>
+        </a>
+
+        <a href="#" class="module-card" onclick="alert('Modul Production belum tersedia.'); return false;">
+            <div class="icon-box icon-production"><i class="fa-solid fa-cart-shopping"></i></div>
+            <div class="module-title">Production</div>
+            <div class="module-desc">Perencanaan alur manufaktur, Bill of Materials harian, dan monitoring utilitas mesin pabrik.</div>
+        </a>
+
+        <a href="#" class="module-card" onclick="alert('Modul HR belum tersedia.'); return false;">
+            <div class="icon-box icon-hr"><i class="fa-solid fa-user-tie"></i></div>
+            <div class="module-title">HR</div>
+            <div class="module-desc">Pusat kelola data administrasi karyawan, absensi, pengajuan cuti, serta rekrutmen internal.</div>
+        </a>
+
+        <a href="dashboard.html" class="module-card">
+            <div class="icon-box icon-inventory"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <div class="module-title">Inventory<br>Management</div>
+            <div class="module-desc">Kontrol kapasitas gudang penyimpanan, lacak log aktivitas mutasi, stock opname berkala, dan reorder point alert.</div>
+        </a>
+
+        <a href="request-pembelian.html" class="module-card">
+            <div class="icon-box icon-purchasing"><i class="fa-solid fa-tag"></i></div>
+            <div class="module-title">Purchasing</div>
+            <div class="module-desc">Sistem kendali request material baku (PR), pelacakan status PO, dan integrasi pengadaan barang.</div>
+        </a>
+    </div>
+
+</body>
+</html>

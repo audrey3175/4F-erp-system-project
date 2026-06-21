@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage - FoodSync Enterprise</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS SESUAI REVISI DESIGN image_8.png (HOME) */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Open Sans', sans-serif; }
+        body { display: flex; height: 100vh; overflow: hidden; background-color: #FFFFFF; }
+        
+        .left-panel { flex: 0 0 50%; display: flex; flex-direction: column; justify-content: center; padding-left: 10%; padding-right: 5%; position: relative; z-index: 10; background-color: #FFFFFF; }
+        
+        .brand-logo-container { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .brand-logo-img { height: 60px; /* Sesuaikan tinggi logo */ }
+        
+        .hero-text { font-size: 16px; font-weight: 600; color: #111827; line-height: 1.6; margin-bottom: 50px; max-width: 450px; }
+        
+        .btn-group { display: flex; flex-direction: column; gap: 20px; width: 200px; }
+        .btn { width: 100%; padding: 14px 24px; border-radius: 50px; font-size: 16px; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer; transition: all 0.3s ease; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
+        
+        .btn-signin { background-color: #3b82f6; color: #FFFFFF; border: none; }
+        .btn-register { background: #FFFFFF; color: #3b82f6; border: 2px solid #3b82f6; }
+        
+        .right-panel { flex: 1; position: relative; /* Menggunakan gambar Plaza Sudirman image_7.png */ background-image: url('assets/plaza_sudirman.jpg'); background-size: cover; background-position: center; }
+        
+        /* Efek Fading Putih di sebelah kiri seperti di image_8.png */
+        .right-panel::before { content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 50%; background: linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }
+    </style>
+</head>
+<body>
+    <div class="left-panel">
+        <div class="brand-logo-container">
+            <img src="assets/new logo (1).png" alt="FoodSync Logo" class="brand-logo-img">
+        </div>
+        <div class="hero-text">
+            Integrated Enterprise System Analysis<br>
+            Optimizing Business Processes Through<br>
+            Technology and Data Integration
+        </div>
+        <div class="btn-group">
+            <a href="login.html?mode=signin" class="btn btn-signin">Sign In</a>
+            <a href="login.html?mode=register" class="btn btn-register">Register</a>
+        </div>
+    </div>
+    <div class="right-panel"></div>
+</body>
+</html>

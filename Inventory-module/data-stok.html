@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Stok & Monitoring - FoodSync</title>
+    <script type="module" src="js/auth-guard.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/data-stok.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/new logo (1).png" alt="FoodSync Logo">
+        </div>
+        
+       <p class="menu-label">MENU</p>
+<ul class="sidebar-menu">
+    <li><a href="dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+    <li class="active"><a href="data-stok.html"><i class="fas fa-database"></i> Data Stok & Monitoring</a></li>
+    <li><a href="request-pembelian.html"><i class="fas fa-shopping-cart"></i> Request Pembelian Bahan Baku</a></li>
+    <li><a href="penerimaan-bahan.html"><i class="fas fa-download"></i> Penerimaan Bahan Baku</a></li>
+    <li><a href="pengeluaran-produksi.html"><i class="fas fa-box-open"></i> Pengeluaran Produksi</a>
+    <li><a href="barang-jadi.html"><i class="fas fa-boxes"></i> Barang Jadi (FG)</a></li>
+    <li><a href="mutasi-laporan.html"><i class="fas fa-clipboard-list"></i> Mutasi & Laporan</a></li>
+</ul>
+
+        <div class="sidebar-bottom">
+            <a href="#" class="help-btn"><i class="far fa-question-circle"></i> Help Center</a>
+            <a href="#" class="logout-btn" onclick="logoutUser(); return false;">Logout</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search employee or data...">
+            </div>
+            <div class="user-profile">
+                <i class="fas fa-cog icon-action"></i>
+                <i class="far fa-bell icon-action"></i>
+                <div class="user-info">
+                    <span class="user-name" id="topbarUserName">Thariq Hapisz</span>
+                    <span class="user-role">Staff Gudang</span>
+                </div>
+                <i class="fas fa-user-circle profile-pic"></i>
+            </div>
+        </header>
+
+        <div class="page-header">
+            <h2>Data Stok & Monitoring</h2>
+            <p>Pantau stok barang, batch, dan alert reorder point</p>
+            
+            <div class="page-tabs">
+                <a href="#" class="tab active">Stok Barang</a>
+                <a href="#" class="tab">Monitoring Batch</a>
+                <a href="#" class="tab">Alert Reorder Point</a>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <select class="filter-select" id="filterKategori">
+                    <option value="">Semua Kategori</option>
+                    <option value="Raw Material">Raw Material</option>
+                    <option value="Finished Good">Finished Good</option>
+                </select>
+                <select class="filter-select" id="filterStatus">
+                    <option value="">Semua Status</option>
+                    <option value="Aman">Aman</option>
+                    <option value="Rendah">Rendah</option>
+                    <option value="Kritis">Kritis</option>
+                </select>
+                <div class="search-input">
+                    <input type="text" id="searchInput" placeholder="Cari kode / nama barang...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+            <div class="action-group">
+                <button class="btn-outline"><i class="fas fa-file-export"></i> Export</button>
+                <button class="btn-outline icon-only" onclick="resetFilters()"><i class="fas fa-sync-alt"></i></button>
+            </div>
+        </div>
+
+       <div class="kpi-container">
+    <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="fas fa-cube"></i></div>
+        <div class="kpi-data">
+            <span>TOTAL ITEM</span>
+            <h3><span id="kpiTotalItem">0</span> <small>Item</small></h3>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon green"><i class="fas fa-arrow-down"></i></div>
+        <div class="kpi-data">
+            <span>TOTAL STOK</span>
+            <h3><span id="kpiTotalStok">0</span> <small>Unit</small></h3>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon orange"><i class="fas fa-arrow-up"></i></div>
+        <div class="kpi-data">
+            <span>STOK MINIMUM</span>
+            <h3><span id="kpiStokMin">0</span> <small>Item</small></h3>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon pink"><i class="fas fa-arrow-down"></i></div>
+        <div class="kpi-data">
+            <span>DI BAWAH MINIMUM</span>
+            <h3><span id="kpiBawahMin">0</span> <small>Item</small></h3>
+        </div>
+    </div>
+</div>
+
+        <div class="split-layout">
+            
+            <div class="table-panel">
+               <table class="data-table">
+    <thead>
+        <tr>
+            <th>Kode Barang</th>
+            <th>Nama Barang</th>
+            <th>Kategori</th>
+            <th>Satuan</th>
+            <th>Stok</th>
+            <th>Minimum</th>
+            <th>Status</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody id="tableBody">
+        </tbody>
+</table>
+
+<div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #ffffff; border-top: 1px solid #e9ecef; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+    <button class="btn-outline" id="btnPrev" onclick="changePage(-1)" style="padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; border: 1px solid #d1d5db; background: white;">Sebelumnya</button>
+    <span id="pageInfo" style="font-size: 13px; font-weight: 600; color: #4b5563;">Halaman 1 dari 1</span>
+    <button class="btn-outline" id="btnNext" onclick="changePage(1)" style="padding: 6px 12px; font-size: 13px; font-weight: 600; cursor: pointer; border-radius: 6px; border: 1px solid #d1d5db; background: white;">Selanjutnya</button>
+</div>
+
+<script type="module" src="js/data-stok.js"></script> 
+<script src="js/user.js"></script>
+            </div>
+
+            <div class="side-panel">
+                <div class="detail-card" id="detailCard">
+                    <div class="detail-header">
+                        <h4>Detail Barang</h4>
+                        <i class="fas fa-times close-icon" onclick="hideDetail()"></i>
+                    </div>
+                    
+                    <div class="product-info">
+                        <div class="product-img">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <div class="product-title">
+                            <span class="prod-code" id="detKode">RM-001</span>
+                            <h5 id="detNama">Tepung Terigu Protein Tinggi</h5>
+                            <span class="badge badge-blue mt-1" id="detKat">Raw Material</span>
+                        </div>
+                    </div>
+
+                    <ul class="detail-list">
+                        <li><span>Kategori</span> <strong id="detKatText">Raw Material</strong></li>
+                        <li><span>Satuan</span> <strong>kg</strong></li>
+                        <li><span>Stok Tersedia</span> <strong class="text-danger" id="detStok">320 kg</strong></li>
+                        <li><span>Minimum</span> <strong id="detMin">500 kg</strong></li>
+                        <li><span>Status</span> <span class="badge badge-danger" id="detStatus">Kritis</span></li>
+                    </ul>
+
+                    <div class="warehouse-stock">
+                        <h6>Stok per Gudang</h6>
+                        <div class="wh-item">
+                            <span>Gudang Pusat</span>
+                            <strong class="text-green">320 kg</strong>
+                        </div>
+                        <div class="wh-item">
+                            <span>Gudang Produksi</span>
+                            <strong class="text-danger">150 kg</strong>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-full"><i class="fas fa-history"></i> Lihat Riwayat Stok</button>
+                </div>
+
+                <div class="notification-card">
+                    <div class="notif-header">
+                        <h4>Notifikasi</h4>
+                        <span class="notif-badge">12</span>
+                    </div>
+                    <ul class="notif-list">
+                        <li>
+                            <strong>Tepung Terigu (RM-001)</strong>
+                            <span>Stok tersisa 320 kg</span>
+                        </li>
+                        <li>
+                            <strong>Minyak Nabati</strong>
+                            <span>Stok tersisa 150 liter</span>
+                        </li>
+                        <li>
+                            <strong>Kemasan Sachet</strong>
+                            <span>Stok minimum tercapai</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="js/data-stok.js"></script>
+<script src="js/user.js"></script></body>
+</html>

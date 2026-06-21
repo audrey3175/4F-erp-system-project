@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penerimaan Bahan Baku - FoodSync</title>
+    <script type="module" src="js/auth-guard.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/penerimaan-bahan.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/new logo (1).png" alt="FoodSync Logo">
+        </div>
+        
+        <p class="menu-label">MENU</p>
+        <ul class="sidebar-menu">
+            <li><a href="dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+            <li><a href="data-stok.html"><i class="fas fa-database"></i> Data Stok & Monitoring</a></li>
+            <li><a href="request-pembelian.html"><i class="fas fa-shopping-cart"></i> Request Pembelian Bahan Baku</a></li>
+            <li><a href="penerimaan-bahan.html"><i class="fas fa-download"></i> Penerimaan Bahan Baku</a></li>
+            <li><a href="pengeluaran-produksi.html"><i class="fas fa-box-open"></i> Pengeluaran Produksi</a>
+            <li><a href="barang-jadi.html"><i class="fas fa-boxes"></i> Barang Jadi (FG)</a></li>
+            <li><a href="mutasi-laporan.html"><i class="fas fa-clipboard-list"></i> Mutasi & Laporan</a></li>
+        </ul>
+
+        <div class="sidebar-bottom">
+            <a href="#" class="help-btn"><i class="far fa-question-circle"></i> Help Center</a>
+            <a href="#" class="logout-btn" onclick="logoutUser(); return false;">Logout</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search employee or data...">
+            </div>
+            <div class="user-profile">
+                <i class="fas fa-cog icon-action"></i>
+                <i class="far fa-bell icon-action"></i>
+                <div class="user-info">
+                    <span class="user-name" id="topbarUserName">Thariq Hapisz</span>
+                    <span class="user-role">Staff Gudang</span>
+                </div>
+                <i class="fas fa-user-circle profile-pic"></i>
+            </div>
+        </header>
+
+        <div class="page-header">
+            <h2>Penerimaan Bahan Baku (Goods Receipt)</h2>
+            <p>Verifikasi dan input barang masuk dari vendor berdasarkan PO</p>
+            <div class="page-tabs">
+                <a href="#" class="tab active">Penerimaan Barang (GR)</a>
+            </div>
+        </div>
+
+        <div class="kpi-mini-container">
+            <div class="kpi-mini">
+                <div class="kpi-icon blue"><i class="fas fa-box"></i></div>
+                <div class="kpi-info"><span>TOTAL GR</span><strong id="kpiTotalGr">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon green"><i class="fas fa-check"></i></div>
+                <div class="kpi-info"><span>SESUAI</span><strong id="kpiSesuai">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon yellow"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="kpi-info"><span>PARTIAL</span><strong id="kpiPartial">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon red"><i class="fas fa-times"></i></div>
+                <div class="kpi-info"><span>REJECT</span><strong id="kpiReject">0</strong></div>
+            </div>
+            <div class="kpi-mini">
+                <div class="kpi-icon purple"><i class="fas fa-cubes"></i></div>
+                <div class="kpi-info"><span>TOTAL ITEM</span><strong id="kpiTotalItem">0</strong></div>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <input type="date" class="filter-input" id="filterTanggal">
+                <select class="filter-select" id="filterVendor"><option value="">Semua Vendor</option></select>
+                <div class="search-input">
+                    <input type="text" id="searchInput" placeholder="Cari No. GR / Vendor...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <button class="btn-outline icon-only" onclick="resetFilters()"><i class="fas fa-sync-alt"></i></button>
+            </div>
+            <div class="action-group">
+                <button class="btn-primary" onclick="openModalForm()"><i class="fas fa-plus"></i> Buat GR Baru</button>
+            </div>
+        </div>
+
+        <div class="split-layout">
+            <div class="table-panel">
+                <div class="box-header"><h4>Daftar Goods Receipt</h4></div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>No. GR</th>
+                            <th>Tanggal</th>
+                            <th>No. PO</th>
+                            <th>Vendor</th>
+                            <th>Total Item</th>
+                            <th>Status</th>
+                            <th>Dibuat Oleh</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="side-panel">
+                <div class="summary-card mb-4">
+                    <div class="box-header"><h4>Ringkasan Penerimaan</h4></div>
+                    <ul class="summary-list">
+                        <li><span>Total Item Diterima</span> <strong id="summaryTotalItem">0</strong></li>
+                        <li><span>Total Nilai</span> <strong>Rp 2.148M</strong></li>
+                        <li><span>Penerimaan Hari Ini</span> <strong>Rp 45.5M</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="summary-card">
+                    <div class="box-header"><h4>Status Penerimaan</h4></div>
+                    <div class="donut-container">
+                        <canvas id="grStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="formModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Form Goods Receipt</h3>
+                <i class="fas fa-times close-modal" onclick="closeModalForm()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <input type="text" class="form-input flex-1" id="grNoPo" placeholder="No. PO (Contoh: PO-045)">
+                    <input type="text" class="form-input flex-1" id="grVendor" placeholder="Nama Vendor">
+                    <input type="date" class="form-input flex-1" id="grTanggal">
+                </div>
+                <div class="form-row mt-3">
+                    <textarea class="form-input w-100" id="grCatatan" rows="2" placeholder="Masukkan catatan penerimaan..."></textarea>
+                </div>
+                
+                <div class="items-header mt-4">
+                    <span class="flex-2">Barang</span>
+                    <span class="flex-1 text-center">Qty Diterima</span>
+                    <span class="flex-1 text-center">Qty Reject</span>
+                    <span class="w-50px text-center">Aksi</span>
+                </div>
+                
+                <div id="grItemsContainer">
+                </div>
+
+                <button type="button" class="btn-text mt-3" onclick="tambahBarisItem()"><i class="fas fa-plus"></i> Tambah Barang</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline mr-2" onclick="closeModalForm()">Batal</button>
+                <button type="button" class="btn-primary" onclick="simpanGr()">Simpan & Proses</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <h3>Detail Penerimaan Barang</h3>
+                <i class="fas fa-times close-modal" onclick="closeModalDetail()"></i>
+            </div>
+            <div class="modal-body">
+                <div class="info-grid mb-4">
+                    <div>
+                        <span class="text-muted block text-xs">No. GR</span>
+                        <strong class="text-sm" id="detGrNo">GR-XXXX</strong>
+                    </div>
+                    <div>
+                        <span class="text-muted block text-xs">Tanggal</span>
+                        <strong class="text-sm" id="detGrTanggal">20 Mei 2026</strong>
+                    </div>
+                    <div>
+                        <span class="text-muted block text-xs">Vendor</span>
+                        <strong class="text-sm" id="detGrVendor">PT. Indofood</strong>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Barang</th>
+                            <th class="text-center">Diterima</th>
+                            <th class="text-center">Reject</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detGrTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer flex-between">
+                <div>
+                </div>
+                <div>
+                    <button type="button" class="btn-primary" onclick="closeModalDetail()">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/penerimaan-bahan.js"></script>
+<script src="js/user.js"></script></body>
+</html>

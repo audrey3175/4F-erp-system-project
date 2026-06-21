@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication - FoodSync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Open Sans', sans-serif; }
+        
+        /* 1. UBAH BACKGROUND LUAR JADI GAMBAR INDOFOOD TOWER */
+        body { 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            /* Mengambil gambar dari folder assets */
+            background: url('assets/indofood_tower.jpg') center/cover no-repeat; 
+            /* Memberikan efek filter gelap sedikit pada background luar agar kotak login tetap menonjol dan elegan */
+            background-color: rgba(10, 25, 65, 0.6); 
+            background-blend-mode: multiply;
+            overflow: hidden; 
+            padding: 20px; 
+        }
+        
+       /* 2. UKURAN KARTU DIPERKECIL AGAR ADA RUANG SISA DI LAYAR */
+        .auth-card { 
+            display: flex; 
+            width: 100%; /* Memberikan jarak pasti dari pinggir layar */
+            max-width: 1150px; /* Ukuran maksimal diturunkan agar tidak terlalu memanjang */
+            min-height: 550px; /* Tinggi disesuaikan agar proporsional */
+            background-color: #FFFFFF; 
+            border-radius: 20px; 
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4); 
+            overflow: hidden; 
+            position: relative; 
+        }
+        
+        .left-area { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
+        .right-area { flex: 1; display: flex; justify-content: center; align-items: center; position: relative; }
+        
+        /* 3. RUANG DALAM FORM DISESUAIKAN */
+        .form-section { 
+            display: none; 
+            width: 100%; 
+            padding: 40px 70px; /* Padding disesuaikan agar isian tetap lega tapi tidak membuat kartu bengkak */
+            animation: fadeEffect 0.5s ease; 
+        }
+        .form-section.active { display: block; }
+        
+        @keyframes fadeEffect { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .header-text { text-align: center; margin-bottom: 35px; }
+        .header-text h1 { font-size: 2.2rem; font-weight: 800; color: #1e3a8a; margin-bottom: 5px; letter-spacing: -1px; }
+        .header-text p { font-size: 0.9rem; color: #6b7280; font-weight: 600; }
+        
+        .form-group { margin-bottom: 18px; }
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+        
+        .form-group input { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; background: #FFFFFF; }
+        .form-group input:focus { border-color: #3b82f6; }
+        
+        .options-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; margin-top: -5px;}
+        .remember-me { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; color: #1f2937; }
+        .forgot-password { font-size: 0.8rem; color: #6b7280; text-decoration: none; font-weight: 600; }
+        
+        .btn-submit { width: 100%; background-color: #1e3a8a; color: white; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-submit:hover { background-color: #1a365d; }
+        
+        /* PANEL GAMBAR KANAN & GLASSMORPHISM */
+        .panel-image-section { display: none; width: 100%; height: 100%; background-image: url('assets/indofood_tower.jpg'); background-size: cover; background-position: center; justify-content: center; align-items: center; padding: 40px; animation: fadeEffect 0.5s ease; position: relative; }
+        .panel-image-section.active { display: flex; }
+        .panel-image-section::before { content:''; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(30, 58, 138, 0.4); }
+        
+        .glass-panel { background: rgba(31, 41, 55, 0.65); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 45px 35px; text-align: center; color: white; width: 100%; max-width: 320px; position: relative; z-index: 5; }
+        .glass-panel h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; line-height: 1.2; letter-spacing: -0.5px; }
+        .glass-panel p { font-size: 0.85rem; font-weight: 400; margin-bottom: 35px; color: rgba(255,255,255,0.8); }
+        .switch-text { font-size: 0.8rem; margin-bottom: 10px; color: rgba(255,255,255,0.9); font-weight: 500;}
+        
+        .btn-switch { width: 100%; background-color: #3b82f6; color: white; padding: 12px; border: none; border-radius: 50px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-switch:hover { background-color: #2563eb; }
+        
+        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 2000; }
+        .toast { padding: 14px 25px; border-radius: 8px; color: white; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-top: 10px; display: flex; align-items: center; gap: 10px; animation: fadeEffect 0.3s ease; }
+
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <div class="left-area">
+            <div class="form-section active" id="formSignIn">
+                <div class="header-text">
+                    <h1>Sign In</h1>
+                    <p>Please enter your details</p>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="user@foodsync.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••">
+                </div>
+                <div class="options-row">
+                    <label class="remember-me"><input type="checkbox"> Remember log in activity</label>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+                <button type="button" class="btn-submit" onclick="prosesLogin()">Sign In</button>
+            </div>
+            
+            <div class="panel-image-section" id="panelRegisterInfo">
+                <div class="glass-panel">
+                    <h2>Welcome To<br>PT Indofood</h2>
+                    <p>We hope you had a great day</p>
+                    <div class="switch-text">Have an account?</div>
+                    <button type="button" class="btn-switch" onclick="setMode('signin')">Sign In</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-area">
+            <div class="panel-image-section active" id="panelSignInInfo">
+                <div class="glass-panel">
+                    <h2>Hey,<br>Welcome Back!</h2>
+                    <p>We hope you had a great day</p>
+                    <div class="switch-text">Not yet a member?</div>
+                    <button type="button" class="btn-switch" onclick="setMode('register')">Register</button>
+                </div>
+            </div>
+            
+            <div class="form-section" id="formRegister">
+                <div class="header-text">
+                    <h1>Create Account</h1>
+                    <p>Please enter your details</p>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>First Name</label><input type="text" id="regFirst" placeholder="Name"></div>
+                    <div class="form-group"><label>Last Name</label><input type="text" id="regLast" placeholder="Name"></div>
+                </div>
+                <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="user@foodsync.com"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="regPassword" placeholder="••••••••"></div>
+                <button type="button" class="btn-submit" onclick="prosesRegister()">Sign Up</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            updateProfile 
+        } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+
+        function setMode(mode) {
+            const fSi = document.getElementById('formSignIn'), pSi = document.getElementById('panelSignInInfo');
+            const fRe = document.getElementById('formRegister'), pRe = document.getElementById('panelRegisterInfo');
+            
+            fSi.classList.remove('active'); pSi.classList.remove('active');
+            fRe.classList.remove('active'); pRe.classList.remove('active');
+            
+            if(mode === 'register') {
+                fRe.classList.add('active'); pRe.classList.add('active');
+            } else {
+                fSi.classList.add('active'); pSi.classList.add('active');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('mode') === 'register') setMode('register');
+        });
+
+        function showToast(msg, error = false) {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.style.backgroundColor = error ? '#D5001C' : '#28A745';
+            t.innerHTML = error ? `<i class="fas fa-exclamation-circle"></i> ${msg}` : `<i class="fas fa-check-circle"></i> ${msg}`;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        async function prosesRegister() {
+            const fn = document.getElementById('regFirst').value.trim();
+            const ln = document.getElementById('regLast').value.trim();
+            const em = document.getElementById('regEmail').value.trim();
+            const ps = document.getElementById('regPassword').value;
+
+            if (!fn || !ln || !em || !ps) {
+                return showToast('Mohon lengkapi semua data!', true);
+            }
+
+            try {
+                // 1. Buat user baru di Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, em, ps);
+                const user = userCredential.user;
+
+                // 2. Perbarui profile (displayName)
+                await updateProfile(user, {
+                    displayName: `${fn} ${ln}`
+                });
+
+                // 3. Simpan data tambahan user ke Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    firstName: fn,
+                    lastName: ln,
+                    email: em,
+                    createdAt: new Date().toISOString()
+                });
+
+                showToast('Akun berhasil dibuat! Silakan Sign In.');
+                setTimeout(() => setMode('signin'), 1500);
+
+            } catch (error) {
+                console.error("Registrasi gagal:", error);
+                let errMsg = "Terjadi kesalahan saat registrasi.";
+                if (error.code === 'auth/email-already-in-use') {
+                    errMsg = "Email sudah terdaftar!";
+                } else if (error.code === 'auth/weak-password') {
+                    errMsg = "Password terlalu lemah (min. 6 karakter)!";
+                } else if (error.code === 'auth/invalid-email') {
+                    errMsg = "Format email tidak valid!";
+                }
+                showToast(errMsg, true);
+            }
+        }
+
+        async function prosesLogin() {
+            const em = document.getElementById('loginEmail').value.trim();
+            const ps = document.getElementById('loginPassword').value;
+
+            if (!em || !ps) {
+                return showToast('Masukkan Email dan Password!', true);
+            }
+
+            try {
+                // 1. Login menggunakan Firebase Auth
+                const userCredential = await signInWithEmailAndPassword(auth, em, ps);
+                const user = userCredential.user;
+
+                // 2. Simpan info user aktif ke localStorage untuk kompabilitas
+                const nameParts = (user.displayName || "User").split(" ");
+                const firstName = nameParts[0] || "";
+                const lastName = nameParts.slice(1).join(" ") || "";
+
+                const activeUserData = {
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: user.email
+                };
+                localStorage.setItem('foodsync_active_user', JSON.stringify(activeUserData));
+
+                showToast('Akses Diterima! Mengalihkan...');
+                setTimeout(() => window.location.href = 'portal.html', 1000);
+
+            } catch (error) {
+                console.error("Login gagal:", error);
+                let errMsg = "Email atau Password salah!";
+                if (error.code === 'auth/invalid-email') {
+                    errMsg = "Format email tidak valid!";
+                } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errMsg = "Email atau Password salah!";
+                }
+                showToast(errMsg, true);
+            }
+        }
+
+        // Ekspos ke scope global agar inline onclick di HTML tetap berfungsi
+        window.setMode = setMode;
+        window.prosesLogin = prosesLogin;
+        window.prosesRegister = prosesRegister;
+        window.showToast = showToast;
+    </script>
+</body>
+</html>
