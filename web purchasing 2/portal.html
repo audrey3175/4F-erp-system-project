@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Portal - FoodSync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            background-color: #003060; /* Biru gelap sebagai dasar */
+            position: relative;
+            overflow: hidden; 
+        }
+
+        /* 1. BACKGROUND GEDUNG (Dibuat pudar menyatu dengan biru) */
+        .bg-building {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('Group%209.png'); 
+            background-size: cover;
+            background-position: center;
+            opacity: 0.15; /* Sangat pudar sesuai desain */
+            z-index: 1;
+        }
+
+        /* 2. EFEK ELLIPSE BLUE (Cahaya Kiri Atas & Kanan Bawah) */
+        .glow-left {
+            position: absolute;
+            top: -20%;
+            left: -15%;
+            width: 900px;
+            height: 900px;
+            background-image: url('Ellipse%203%20BLUE.png'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.9;
+            z-index: 2;
+        }
+
+        .glow-right {
+            position: absolute;
+            bottom: -30%;
+            right: -10%;
+            width: 1000px;
+            height: 1000px;
+            background-image: url('Ellipse%203%20BLUE.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            opacity: 0.8;
+            z-index: 2;
+        }
+
+        /* 3. GRID MODUL */
+        .portal-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 28px; 
+            max-width: 1050px; 
+            width: 100%; 
+            padding: 20px;
+            z-index: 10; /* Di atas cahaya dan gedung */
+            position: relative;
+        }
+        
+        /* 4. GLASSMORPHISM CARD (Bentuk dan Blur disamakan) */
+        .module-card { 
+            background: rgba(255, 255, 255, 0.12); 
+            backdrop-filter: blur(24px); 
+            -webkit-backdrop-filter: blur(24px); 
+            border: 1px solid rgba(255, 255, 255, 0.25); 
+            border-radius: 36px; /* Sudut sangat melengkung */
+            padding: 40px 32px; 
+            color: #FFFFFF; 
+            text-decoration: none; 
+            transition: all 0.3s ease; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: flex-start; 
+            min-height: 280px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .module-card:hover { 
+            transform: translateY(-6px); 
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* 5. KOTAK IKON PUTIH */
+        .icon-box { 
+            width: 64px; 
+            height: 64px; 
+            background-color: #FFFFFF; 
+            border-radius: 20px; /* Sudut ikon melengkung halus */
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            margin-bottom: 30px; 
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+        }
+        
+        /* 6. TRIK WARNA IKON GRADASI (Mirip dengan icon SVG asli di desain) */
+        .icon-box i { font-size: 32px; }
+        
+        .icon-sales i { 
+            background: linear-gradient(135deg, #FF5A1F, #FF8C00); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+        .icon-finance i { 
+            background: linear-gradient(135deg, #28A745, #84CC16); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+        .icon-production i { 
+            background: linear-gradient(135deg, #0078FF, #00C6FF); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+        .icon-hr i { 
+            background: linear-gradient(135deg, #7C3AED, #D946EF); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+        .icon-inventory i { 
+            background: linear-gradient(135deg, #F5A623, #FBBF24); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+        .icon-purchasing i { 
+            background: linear-gradient(135deg, #65A30D, #A3E635); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+        }
+        
+        /* 7. TIPOGRAFI (Ukuran teks dan lorem ipsum persis) */
+        .module-title { 
+            font-size: 26px; 
+            font-weight: 800; 
+            margin-bottom: 12px; 
+            line-height: 1.1; 
+            letter-spacing: -0.5px;
+        }
+        
+        .module-desc { 
+            font-size: 14px; 
+            color: rgba(255, 255, 255, 0.9); 
+            line-height: 1.5; 
+            font-weight: 400; 
+        }
+        
+        @media (max-width: 900px) { .portal-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { .portal-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="bg-building"></div>
+    <div class="glow-left"></div>
+    <div class="glow-right"></div>
+
+    <div class="portal-grid">
+        <a href="#" class="module-card">
+            <div class="icon-box icon-sales"><i class="fa-solid fa-chart-area"></i></div>
+            <div class="module-title">Sales and<br>Marketing</div>
+            <div class="module-desc">lorem ipsum sir amet wat gatau aaashdjkheufhefsdbhbbfegygefry</div>
+        </a>
+
+        <a href="#" class="module-card">
+            <div class="icon-box icon-finance"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="module-title">Finance</div>
+            <div class="module-desc">lorem ipsum sir amet wat gatau aaashdjkheufhefsdbhbbfegygefry</div>
+        </a>
+
+        <a href="#" class="module-card">
+            <div class="icon-box icon-production"><i class="fa-solid fa-cart-shopping"></i></div>
+            <div class="module-title">Production</div>
+            <div class="module-desc">lorem ipsum sir amet wat gatau aaashdjkheufhefsdbhbbfegygefry</div>
+        </a>
+
+        <!-- Card 4: HR -->
+        <a href="#" class="module-card" onclick="alert('Modul HR belum tersedia.'); return false;">
+            <div class="icon-box">
+                <i class="fa-solid fa-user-tie" style="color: #6F42C1; font-size: 28px;"></i>
+            </div>
+            <div class="module-title">HR</div>
+            <div class="module-desc">lorem ipsum sir amet wat gatau<br>aaashdjkheufhefsdbhbbfegygefry</div>
+        </a>
+
+        <a href="#" class="module-card">
+            <div class="icon-box icon-inventory"><i class="fa-solid fa-list-check"></i></div>
+            <div class="module-title">Inventory<br>Management</div>
+            <div class="module-desc">lorem ipsum sir amet wat gatau aaashdjkheufhefsdbhbbfegygefry</div>
+        </a>
+
+        <a href="index.html" class="module-card">
+            <div class="icon-box icon-purchasing"><i class="fa-solid fa-tag"></i></div>
+            <div class="module-title">Purchasing</div>
+            <div class="module-desc">lorem ipsum sir amet wat gatau aaashdjkheufhefsdbhbbfegygefry</div>
+        </a>
+    </div>
+
+</body>
+</html>

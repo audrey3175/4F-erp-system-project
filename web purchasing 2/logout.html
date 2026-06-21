@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logout - FoodSync</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body {
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+            background-color: #E2E8F0;
+            overflow: hidden; position: relative;
+        }
+
+        /* Latar Belakang & Efek Cahaya */
+        .logout-bg-gedung { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; opacity: 0.6; }
+        .logout-glow-blue { position: absolute; bottom: -20%; left: -10%; width: 80vw; max-width: 900px; z-index: 2; pointer-events: none; opacity: 0.8; }
+        .logout-glow-yellow { position: absolute; top: -20%; right: -10%; width: 80vw; max-width: 900px; z-index: 2; pointer-events: none; opacity: 0.8; }
+
+        /* Kotak Glassmorphism Presisi (Menyerupai Rounded Square) */
+        .logout-modal-box {
+            position: relative; z-index: 10;
+            background: rgba(255, 255, 255, 0.6); 
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 40px; 
+            padding: 45px 50px;
+            text-align: center;
+            width: 100%; max-width: 360px;
+            box-shadow: 0 20px 40px rgba(0, 59, 122, 0.15);
+            display: flex; flex-direction: column; align-items: center;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* Ikon Orang Berlari */
+        .logout-modal-box i.fa-person-running { 
+            font-size: 60px; color: #0044CC; margin-bottom: 16px; 
+        }
+        
+        /* Teks Judul */
+        .logout-modal-box h3 { 
+            font-size: 16px; color: #003B7A; font-weight: 700; line-height: 1.1; margin-bottom: 24px; letter-spacing: -0.3px;
+        }
+        .logout-modal-box h3 span { 
+            font-size: 36px; font-weight: 900; display: block; margin-top: 4px; letter-spacing: -1px; 
+        }
+
+        /* Area Tombol */
+        .logout-btn-wrap { 
+            display: flex; flex-direction: column; gap: 14px; width: 100%; align-items: center; 
+        }
+        
+        /* Tombol NO - Efek 3D Shiny Red Persis Desain */
+        .btn-custom-no {
+            background: linear-gradient(180deg, #FF0015 0%, #8B0000 100%);
+            color: #FFFFFF; border: none; padding: 12px; border-radius: 50px;
+            font-size: 16px; font-weight: 800; width: 160px; cursor: pointer; text-decoration: none;
+            /* Inner shadow atas putih & bawah hitam untuk efek 3D cembung */
+            box-shadow: inset 0px 4px 6px rgba(255, 255, 255, 0.4), inset 0px -4px 6px rgba(0, 0, 0, 0.4), 0 8px 15px rgba(139, 0, 0, 0.4);
+            transition: transform 0.1s; display: flex; justify-content: center; align-items: center;
+        }
+        .btn-custom-no:active { transform: scale(0.95); }
+        
+        /* Tombol YES - Putih border Merah */
+        .btn-custom-yes {
+            background: #FFFFFF; color: #003B7A; border: 2px solid #CC0000;
+            padding: 10px; border-radius: 50px; font-size: 16px; font-weight: 800;
+            width: 160px; cursor: pointer; text-decoration: none;
+            /* Inner shadow tipis agar sedikit masuk ke dalam */
+            box-shadow: inset 0 -3px 5px rgba(204, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.1s; display: flex; justify-content: center; align-items: center;
+        }
+        .btn-custom-yes:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+    <img src="Plaza_Sudirman-Marein_-_panoramio.jpg.jpeg" class="logout-bg-gedung" alt="Gedung" onerror="this.style.display='none'">
+    <img src="Ellipse 3 BLUE.png" class="logout-glow-blue" alt="Glow Blue" onerror="this.style.display='none'">
+    <img src="Ellipse 2 YELLOW.png" class="logout-glow-yellow" alt="Glow Yellow" onerror="this.style.display='none'">
+
+    <div class="logout-modal-box">
+        <i class="fa-solid fa-person-running"></i>
+        <h3>Are you sure want to<span>logging out?</span></h3>
+        <div class="logout-btn-wrap">
+            <a href="index.html" class="btn-custom-no">NO</a>
+            <a href="login.html" class="btn-custom-yes">YES</a>
+        </div>
+    </div>
+
+</body>
+</html>
