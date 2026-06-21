@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>n
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FoodSync - Production System Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* --- 1. Variables & Reset --- */
+        :root {
+            --primary: #003E7B;
+            --primary-light: #EEF3FD;
+            --bg-body: #F4F7FE;
+            --white: #FFFFFF;
+            --text-dark: #111827;
+            --text-main: #1E1E1E;
+            --text-gray: #6B7280;
+            --danger: #BB0013;
+            --success: #22C55E;
+            --warning: #A16207;
+            --font-main: 'SF Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+            --shadow-sm: 0px 10px 20px rgba(0, 0, 0, 0.05);
+            --border-light: #F3F4F6;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- 2. Sidebar Navigation --- */
+        .sidebar {
+            width: 260px;
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            bottom: 20px;
+            height: calc(100vh - 40px);
+            z-index: 100;
+        }
+
+        .brand-logo { width: 100%; max-width: 160px; margin: 0 auto 30px; display: block; object-fit: contain; }
+
+        .menu-label {
+            font-size: 14px;
+            color: var(--text-gray);
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-left: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-menu { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item i { width: 20px; text-align: center; font-size: 16px; color: var(--text-gray); }
+        .nav-item:hover { background-color: #F9FAFB; }
+        .nav-item.active { background-color: var(--primary-light); color: var(--primary); }
+        .nav-item.active i { color: var(--primary); }
+
+        .nav-bottom {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-top: 1px solid var(--border-light);
+            padding-top: 16px;
+        }
+
+        .nav-logout { background-color: var(--danger) !important; color: var(--white) !important; justify-content: center; margin-top: 10px; }
+        .nav-logout i { color: var(--white) !important; }
+        .nav-logout:hover { background-color: #99000f !important; }
+
+        /* --- 3. Main Workspace & Header --- */
+        .main-wrapper {
+            flex: 1;
+            margin-left: 300px;
+            padding: 30px 40px;
+            position: relative;
+            max-width: calc(100vw - 300px);
+        }
+
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+
+        .search-bar {
+            background: var(--white);
+            padding: 12px 20px;
+            border-radius: 30px;
+            width: 350px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .search-bar input { border: none; background: transparent; outline: none; margin-left: 10px; width: 100%; font-size: 14px; color: var(--text-main); font-weight: 500; }
+
+        .header-actions { display: flex; align-items: center; gap: 15px; position: relative; }
+
+        .icon-btn {
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-gray);
+            background: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover { color: var(--primary); background: #f1f5f9; }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: 10px;
+            background: var(--white);
+            padding: 6px 16px;
+            border-radius: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .user-info { text-align: right; }
+        .user-info h4 { font-size: 14px; font-weight: 700; color: var(--text-main); }
+        .user-info p { font-size: 12px; color: var(--text-gray); font-weight: 500; }
+        .avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+        /* --- 4. Dropdown Modals --- */
+        .dropdown-modal {
+            position: absolute;
+            top: 65px;
+            right: 0;
+            background: var(--white);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            padding: 20px;
+            width: 320px;
+            display: none;
+            z-index: 1000;
+            border: 1px solid var(--border-light);
+        }
+        .dropdown-modal.show { display: block; }
+        .dropdown-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .dropdown-header h3 { font-size: 18px; font-weight: 700; }
+        .dropdown-header a { color: #2E6FDA; font-size: 13px; text-decoration: none; font-weight: 600; cursor: pointer; }
+
+        .list-item { display: flex; align-items: center; gap: 15px; padding: 12px 0; cursor: pointer; transition: opacity 0.2s; border-bottom: 1px solid var(--border-light); }
+        .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .list-item:hover { opacity: 0.7; }
+        .list-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .list-text { flex: 1; }
+        .list-text h4 { font-size: 14px; font-weight: 600; margin-bottom: 2px; color: var(--text-main); }
+        .list-text p { font-size: 12px; color: var(--text-gray); line-height: 1.4; }
+
+        /* --- 5. View Containers (SPA Logic) --- */
+        .view-section { display: none; animation: fadeIn 0.3s ease; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 6. View: Dashboard --- */
+        .page-header { margin-bottom: 30px; }
+        .page-header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; color: var(--text-dark); }
+        .page-header p { font-size: 16px; color: var(--text-gray); font-weight: 500; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
+
+        .stat-card { background: var(--white); padding: 24px; border-radius: 20px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; justify-content: center; }
+        .stat-card h3 { font-size: 15px; font-weight: 600; color: var(--text-main); margin-bottom: 12px; }
+        .stat-card .val { font-size: 42px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+
+        .c-blue { color: var(--primary); }
+        .c-green { color: var(--success); }
+        .c-warn { color: var(--warning); }
+        .c-red { color: var(--danger); }
+
+        .chart-box { background: var(--white); padding: 24px; border-radius: 24px; box-shadow: var(--shadow-sm); }
+        .chart-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-box h3 { font-size: 18px; font-weight: 700; color: var(--text-dark); }
+        .chart-legend { display: flex; align-items: center; gap: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-gray); font-weight: 500; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .btn-filter { background: var(--white); border: 1px solid var(--border-light); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .chart-placeholder { height: 320px; width: 100%; position: relative; }
+
+        /* --- 7. View: Profil & Keamanan --- */
+        .card-panel { background: var(--white); padding: 30px; border-radius: 20px; box-shadow: var(--shadow-sm); position: relative; }
+        .card-panel h2 { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+
+        .profile-container { display: flex; gap: 40px; }
+        .profile-avatar-col { display: flex; flex-direction: column; align-items: center; width: 120px; }
+        .profile-pic { width: 120px; height: 120px; background: var(--primary-light); border-radius: 50%; margin-bottom: 12px; }
+        .profile-avatar-col a { color: #2E6FDA; font-weight: 600; text-decoration: none; font-size: 14px; }
+        .profile-info-col { flex: 1; display: grid; grid-template-columns: 1fr 1fr; row-gap: 24px; column-gap: 40px; }
+        .info-group label { font-size: 13px; color: var(--text-gray); font-weight: 500; display: block; margin-bottom: 4px; }
+        .info-group p { font-size: 16px; font-weight: 600; color: var(--text-main); }
+
+        .btn-action { background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; float: right; margin-top: 24px; transition: opacity 0.2s; }
+        .btn-action:hover { opacity: 0.9; }
+
+        .security-form { max-width: 500px; }
+        .input-group { margin-bottom: 20px; }
+        .input-group label { font-size: 14px; font-weight: 600; display: block; margin-bottom: 8px; color: var(--text-main); }
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%; padding: 13px 16px; border-radius: 10px;
+            border: 1px solid #E5E7EB; background: #F9FAFB;
+            font-size: 14px; outline: none; color: var(--text-main);
+            transition: border-color 0.2s; font-family: var(--font-main);
+        }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--primary); background: #fff; }
+        .input-group select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; cursor: pointer; }
+        .input-group textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+        .btn-full { width: 100%; background: var(--primary); color: white; padding: 14px; border-radius: 8px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+
+        /* --- 8. Modul Rencana Produksi --- */
+        .rp-header-container { display: flex; flex-direction: column; margin-bottom: 20px; }
+        .btn-outline {
+            background: var(--white); border: 1px solid #DFDFDF;
+            color: var(--text-main); padding: 12px 24px;
+            border-radius: 12px; font-weight: 700; cursor: pointer;
+            align-self: flex-start; font-size: 14px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02); transition: 0.2s;
+        }
+        .btn-outline:hover { background: #F9FAFB; }
+
+        .table-container { width: 100%; overflow-x: auto; }
+
+        .rp-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
+        .rp-table th {
+            background-color: var(--primary); color: var(--white);
+            padding: 18px 20px; font-size: 12px;
+            text-transform: uppercase; font-weight: 600;
+            white-space: nowrap; letter-spacing: 0.5px;
+        }
+        .rp-table th:first-child { border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
+        .rp-table th:last-child { border-top-right-radius: 16px; border-bottom-right-radius: 16px; text-align: center; }
+        .rp-table td { padding: 18px 20px; border-bottom: 1px solid var(--border-light); font-size: 14px; font-weight: 600; color: var(--text-main); vertical-align: middle; }
+        .rp-table td:first-child { color: #2E6FDA; }
+        .rp-table td:last-child { text-align: center; }
+        .rp-table tbody tr:last-child td { border-bottom: none; }
+
+        .btn-verif { background-color: var(--primary-light); color: var(--primary); border: none; padding: 10px 24px; border-radius: 20px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        .btn-verif:hover { opacity: 0.8; }
+
+        .pagination { display: flex; justify-content: flex-end; gap: 8px; margin-top: 25px; }
+        .page-num { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: 700; cursor: pointer; color: var(--text-main); font-size: 15px; }
+        .page-num.active { background-color: #D1D5DB; }
+        .page-num:hover:not(.active) { background-color: #F3F4F6; }
+
+        .form-header-blue { background-color: var(--primary); color: white; padding: 20px 30px; border-radius: 16px 16px 0 0; margin: -30px -30px 30px -30px; }
+        .form-header-blue h2 { font-size: 20px; font-weight: 700; margin: 0; }
+
+        .back-btn-wrapper { display: flex; align-items: flex-start; gap: 20px; }
+        .btn-back { background-color: #D1D5DB; border: none; width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--text-main); cursor: pointer; transition: 0.2s; flex-shrink: 0; }
+        .btn-back:hover { opacity: 0.8; }
+
+        /* --- 9. Status badges --- */
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 7px 18px; border-radius: 20px;
+            font-size: 13px; font-weight: 700; white-space: nowrap;
+        }
+        .badge-draft { background-color: #E5E7EB; color: #374151; }
+        .badge-aktif { background-color: #DCFCE7; color: #15803D; }
+        .badge-draft::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background-color: #9CA3AF; }
+        .badge-aktif::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background-color: #22C55E; }
+
+        .btn-cetak { background: none; border: none; color: #2E6FDA; font-size: 13px; font-weight: 700; cursor: pointer; padding: 0; text-decoration: none; transition: opacity 0.2s; }
+        .btn-cetak:hover { opacity: 0.7; text-decoration: underline; }
+
+        .po-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 40px; }
+        .po-page-subtitle { font-size: 15px; color: var(--text-gray); font-weight: 500; margin-top: 4px; margin-bottom: 24px; }
+
+        .btn-terbitkan { background-color: var(--primary); color: white; border: none; padding: 15px 36px; border-radius: 30px; font-size: 15px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; letter-spacing: 0.2px; }
+        .btn-terbitkan:hover { opacity: 0.88; }
+
+        .rp-table th.center, .rp-table td.center { text-align: center; }
+        .rp-table th.right, .rp-table td.right { text-align: right; }
+
+        /* ================================================================
+           NEW VIEWS CSS
+        ================================================================ */
+
+        /* ---- PROSES PRODUKSI: Kanban Board ---- */
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 4px;
+        }
+
+        .kanban-col {
+            background: #EAEEF5;
+            border-radius: 20px;
+            padding: 18px 14px;
+            min-height: 400px;
+        }
+
+        .kanban-col-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+
+        .kanban-col-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .kanban-count {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: white;
+            background: #9CA3AF;
+            flex-shrink: 0;
+        }
+
+        .kanban-count.blue  { background: var(--primary); }
+        .kanban-count.orange { background: #EA580C; }
+
+        .kanban-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            transition: box-shadow 0.2s;
+        }
+
+        .kanban-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .kanban-card:last-child { margin-bottom: 0; }
+
+        .kanban-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .po-chip {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .po-chip-yellow {
+            display: inline-block;
+            background: #FEF9C3;
+            color: #854D0E;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .card-menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 4px;
+            letter-spacing: 1px;
+            line-height: 1;
+        }
+
+        .status-active {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #15803D;
+        }
+
+        .status-active::before {
+            content: '';
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            flex-shrink: 0;
+        }
+
+        .kanban-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .kanban-card-line {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-gray);
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .kanban-card-footer-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-gray);
+            font-weight: 600;
+        }
+
+        /* Progress bar */
+        .progress-section { margin: 10px 0 4px; }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .progress-label { font-size: 12px; color: var(--text-gray); font-weight: 500; }
+        .progress-pct   { font-size: 13px; color: var(--primary); font-weight: 800; }
+
+        .progress-bar-bg {
+            background: #E5E7EB;
+            border-radius: 6px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 6px;
+            transition: width 0.6s ease;
+        }
+
+        .progress-qty {
+            text-align: right;
+            font-size: 11px;
+            color: var(--text-gray);
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        /* QA warning banner */
+        .kanban-warning {
+            background: #FFF7ED;
+            border: 1px solid #FED7AA;
+            border-radius: 10px;
+            padding: 9px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #C2410C;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .kanban-warning i { font-size: 13px; flex-shrink: 0; }
+
+        /* Pengaturan mini card */
+        .pengaturan-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 20px 24px;
+            box-shadow: var(--shadow-sm);
+            margin-top: 24px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pengaturan-card h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        /* ---- INPUT HASIL PRODUKSI ---- */
+        .input-split-layout {
+            display: grid;
+            grid-template-columns: 310px 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        /* Left panel: WO list */
+        .wo-list-panel {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .wo-list-item {
+            padding: 16px 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .wo-list-item:last-child { border-bottom: none; }
+        .wo-list-item:hover:not(.selected) { background: #F9FAFB; }
+        .wo-list-item.selected { background: #F0F5FF; }
+
+        .wo-po-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .wo-po-num {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .badge-qc {
+            background: #FEE2E2;
+            color: #B91C1C;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.2px;
+        }
+
+        .wo-product-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 3px;
+        }
+
+        .wo-line-text {
+            font-size: 12px;
+            color: var(--text-gray);
+            font-weight: 500;
+        }
+
+        /* Right panel: form */
+        .wo-form-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 28px;
+            letter-spacing: -0.3px;
+        }
+
+        .input-dual-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-with-unit {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-with-unit input {
+            width: 100%;
+            padding: 14px 70px 14px 18px;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            background: #F9FAFB;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: var(--font-main);
+            -moz-appearance: textfield;
+        }
+
+        .input-with-unit input::-webkit-outer-spin-button,
+        .input-with-unit input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+        .input-with-unit input:focus {
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        .unit-label {
+            position: absolute;
+            right: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-gray);
+            pointer-events: none;
+        }
+
+        .wo-form-textarea label {
+            font-size: 14px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .wo-form-textarea textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            background: #F9FAFB;
+            font-size: 14px;
+            font-family: var(--font-main);
+            color: var(--text-main);
+            resize: none;
+            height: 130px;
+            outline: none;
+            line-height: 1.6;
+            transition: border-color 0.2s;
+        }
+
+        .wo-form-textarea textarea:focus { border-color: var(--primary); background: #fff; }
+
+        .btn-selesaikan {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 24px;
+            float: right;
+            transition: opacity 0.2s, transform 0.1s;
+            letter-spacing: 0.2px;
+        }
+
+        .btn-selesaikan:hover { opacity: 0.88; }
+        .btn-selesaikan:active { transform: scale(0.98); }
+
+        .info-banner {
+            background: #EFF6FF;
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            clear: both;
+        }
+
+        .info-banner i { color: #2563EB; font-size: 16px; margin-top: 2px; flex-shrink: 0; }
+
+        .info-banner p {
+            font-size: 13px;
+            color: #1D4ED8;
+            font-weight: 500;
+            line-height: 1.65;
+        }
+
+        /* ---- RIWAYAT PRODUKSI ---- */
+        .riwayat-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-filter-riwayat {
+            background: var(--white);
+            border: 1px solid #E5E7EB;
+            color: var(--text-main);
+            padding: 10px 22px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            transition: 0.2s;
+            font-family: var(--font-main);
+        }
+
+        .btn-filter-riwayat:hover { background: #F9FAFB; }
+
+        .btn-export-file {
+            background: #E5E7EB;
+            border: none;
+            color: var(--text-main);
+            padding: 10px 22px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: var(--font-main);
+        }
+
+        .btn-export-file:hover { background: #D1D5DB; }
+
+        /* Riwayat table */
+        .riwayat-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .riwayat-table thead tr th {
+            background: var(--primary);
+            color: var(--white);
+            padding: 18px 22px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: left;
+            letter-spacing: 0.3px;
+        }
+
+        .riwayat-table thead tr th:first-child { border-radius: 14px 0 0 14px; }
+        .riwayat-table thead tr th:last-child  { border-radius: 0 14px 14px 0; text-align: center; }
+
+        .riwayat-table tbody td {
+            padding: 20px 22px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+        }
+
+        .riwayat-table tbody td:first-child { color: #2E6FDA; }
+        .riwayat-table tbody td:last-child   { text-align: center; }
+        .riwayat-table tbody tr:last-child td { border-bottom: none; }
+
+        .badge-selesai {
+            display: inline-block;
+            background: #DCFCE7;
+            color: #15803D;
+            padding: 7px 22px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* Riwayat pagination - centered circles */
+        .riwayat-pagination {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin: 28px 0;
+        }
+
+        .rpg-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-gray);
+            border: none;
+            background: transparent;
+            font-family: var(--font-main);
+            transition: 0.2s;
+        }
+
+        .rpg-btn:hover:not(.rpg-active) { background: #F3F4F6; color: var(--text-main); }
+        .rpg-btn.rpg-active { background: #D1D5DB; color: var(--text-dark); }
+
+        /* Summary stat cards */
+        .stats-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .stat-summary-card {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 28px 30px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-summary-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-summary-label i {
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .stat-summary-value {
+            font-size: 46px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1;
+        }
+
+        /* Success toast */
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1A2F4A;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-notification i { font-size: 18px; color: var(--success); }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <img src="new logo.png" alt="FoodSync Logo" class="brand-logo"
+             onerror="this.style.display='none'; document.getElementById('logo-text').style.display='block';">
+        <h1 id="logo-text" style="display:none; text-align:center; color:var(--primary); margin-bottom:30px; font-size:24px;">FoodSync</h1>
+
+        <div class="menu-label">MENU</div>
+        <nav class="nav-menu">
+            <a class="nav-item" onclick="switchView('dashboard', this)"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a class="nav-item" onclick="switchView('rencana', this)"><i class="far fa-calendar-alt"></i> Rencana Produksi</a>
+            <a class="nav-item" onclick="switchView('po', this)"><i class="far fa-file-alt"></i> Form Perintah Kerja</a>
+            <a class="nav-item" onclick="switchView('proses', this)"><i class="fas fa-industry"></i> Proses Produksi</a>
+            <a class="nav-item" onclick="switchView('input', this)"><i class="fas fa-box"></i> Input Hasil Produksi</a>
+            <a class="nav-item active" onclick="switchView('riwayat', this)"><i class="fas fa-history"></i> Riwayat Produksi</a>
+        </nav>
+
+        <div class="nav-bottom">
+            <a class="nav-item" style="color:var(--text-gray);"><i class="far fa-question-circle"></i> Help Center</a>
+            <a class="nav-item nav-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="main-wrapper">
+
+        <header class="top-header">
+            <div class="search-bar">
+                <i class="fas fa-search" style="color: #9CA3AF;"></i>
+                <input type="text" placeholder="Search employee or data...">
+            </div>
+
+            <div class="header-actions">
+                <div class="icon-btn" onclick="toggleModal('modal-settings')"><i class="fas fa-cog"></i></div>
+                <div class="icon-btn" onclick="toggleModal('modal-notif')"><i class="far fa-bell"></i></div>
+
+                <div class="user-profile">
+                    <div class="user-info">
+                        <h4>Suep</h4>
+                        <p>Production Spv</p>
+                    </div>
+                    <div class="avatar"><i class="far fa-user"></i></div>
+                </div>
+
+                <!-- Settings Modal -->
+                <div id="modal-settings" class="dropdown-modal">
+                    <div class="dropdown-header"><h3>Pengaturan</h3></div>
+                    <div class="list-item" onclick="switchView('profil'); toggleModal('modal-settings')">
+                        <div class="list-icon"><i class="far fa-user"></i></div>
+                        <div class="list-text"><h4>Profil Saya</h4><p>Kelola informasi akun Anda</p></div>
+                        <i class="fas fa-chevron-right" style="color:#9CA3AF; font-size:12px;"></i>
+                    </div>
+                    <div class="list-item" onclick="switchView('keamanan'); toggleModal('modal-settings')">
+                        <div class="list-icon"><i class="fas fa-lock"></i></div>
+                        <div class="list-text"><h4>Keamanan</h4><p>Ubah password & keamanan</p></div>
+                        <i class="fas fa-chevron-right" style="color:#9CA3AF; font-size:12px;"></i>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-icon"><i class="fas fa-globe"></i></div>
+                        <div class="list-text"><h4>Bahasa</h4></div>
+                        <span style="color:#6B7280; font-size:13px; font-weight:500;">Indonesia <i class="fas fa-chevron-down" style="margin-left:4px;"></i></span>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-icon" style="color:#BB0013;"><i class="fas fa-sign-out-alt"></i></div>
+                        <div class="list-text"><h4 style="color:#BB0013; margin:0;">Logout</h4></div>
+                    </div>
+                </div>
+
+                <!-- Notification Modal -->
+                <div id="modal-notif" class="dropdown-modal" style="right: 80px; width: 360px;">
+                    <div class="dropdown-header">
+                        <h3>Notifikasi</h3>
+                        <a>Mark all as read</a>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-icon" style="background:#DBEAFE; color:#2563EB;"><i class="fas fa-shopping-bag"></i></div>
+                        <div class="list-text"><h4>Pesanan baru #SO-250524</h4><p>Dari Toko Maju Jaya<br>5 menit yang lalu</p></div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-icon" style="background:#D1FAE5; color:#059669;"><i class="fas fa-chart-line"></i></div>
+                        <div class="list-text"><h4>Laporan penjualan harian</h4><p>Sudah tersedia untuk dilihat<br>30 menit yang lalu</p></div>
+                    </div>
+                    <div class="list-item">
+                        <div class="list-icon" style="background:#FFEDD5; color:#EA580C;"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="list-text"><h4>Stok varian Mie Goreng</h4><p>Tersisa di bawah 20%<br>2 jam yang lalu</p></div>
+                    </div>
+                    <div class="list-item" style="border:none; justify-content:center; padding-top:15px;">
+                        <a style="color:#2E6FDA; font-weight:600; font-size:13px; text-decoration:none; cursor:pointer;">Lihat semua notifikasi <i class="fas fa-chevron-right" style="font-size:10px; margin-left:4px;"></i></a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+
+        <!-- ===================== DASHBOARD ===================== -->
+        <div id="view-dashboard" class="view-section">
+            <div class="page-header">
+                <h1>Selamat Datang, Suep</h1>
+                <p>Senin, 17 Juni 2026 &nbsp;&bull;&nbsp; FoodSync Production System Dashboard</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><h3>Total Permintaan</h3><div class="val c-blue">1,248</div></div>
+                <div class="stat-card"><h3>Menunggu Review</h3><div class="val c-green">12</div></div>
+                <div class="stat-card"><h3>Sedang Produksi</h3><div class="val c-warn">8</div></div>
+                <div class="stat-card"><h3>Selesai Hari Ini</h3><div class="val c-red">45</div></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-header-row">
+                    <h3>Output dan Target Produksi</h3>
+                    <div class="chart-legend">
+                        <div class="legend-item"><div class="dot" style="background:#0047BA;"></div> Actual Output</div>
+                        <div class="legend-item"><div class="dot" style="background:#D1D5DB;"></div> Target</div>
+                        <button class="btn-filter">This Week <i class="fas fa-chevron-down" style="margin-left:6px; color:#9CA3AF;"></i></button>
+                    </div>
+                </div>
+                <div class="chart-placeholder"><canvas id="productionChart"></canvas></div>
+            </div>
+        </div>
+
+
+        <!-- ===================== PROFIL ===================== -->
+        <div id="view-profil" class="view-section">
+            <div class="page-header"><h1>Profil Saya</h1></div>
+            <div class="card-panel">
+                <h2>Informasi Pribadi</h2>
+                <div class="profile-container">
+                    <div class="profile-avatar-col">
+                        <div class="profile-pic" style="display:flex; align-items:center; justify-content:center;"><i class="far fa-user" style="font-size:40px; color:var(--primary);"></i></div>
+                        <a href="#">Ubah Foto</a>
+                    </div>
+                    <div class="profile-info-col">
+                        <div class="info-group"><label>Nama Lengkap</label><p>Suep</p></div>
+                        <div class="info-group"><label>Email</label><p>production@indofood.co.id</p></div>
+                        <div class="info-group"><label>No. Telpon</label><p>0812 - 3456 - 7890</p></div>
+                        <div class="info-group"></div>
+                        <div class="info-group"><label>Departemen</label><p>Production</p></div>
+                        <div class="info-group"><label>Jabatan</label><p>Production Supervisor</p></div>
+                    </div>
+                </div>
+                <button class="btn-action">Edit Profil</button>
+                <div style="clear:both;"></div>
+            </div>
+        </div>
+
+
+        <!-- ===================== KEAMANAN ===================== -->
+        <div id="view-keamanan" class="view-section">
+            <div class="page-header"><h1>Keamanan</h1><p>Pastikan akun Anda tetap aman</p></div>
+            <div class="card-panel security-form">
+                <h2>Ubah Password</h2>
+                <div class="input-group"><label>Password Saat Ini</label><input type="password" placeholder="Masukkan password saat ini"></div>
+                <div class="input-group"><label>Password Baru</label><input type="password" placeholder="Masukkan password baru"></div>
+                <div class="input-group"><label>Konfirmasi Password Baru</label><input type="password" placeholder="Konfirmasi password baru"></div>
+                <button class="btn-full">Ubah Password</button>
+            </div>
+        </div>
+
+
+        <!-- ===================== RENCANA PRODUKSI — PAGE 1 ===================== -->
+        <div id="view-rencana" class="view-section">
+            <div class="rp-header-container">
+                <div class="page-header" style="margin-bottom:5px;"><h1 style="font-size:32px;">Antrean Verifikasi Permintaan Produksi</h1></div>
+                <button class="btn-outline" onclick="switchView('form-rencana')">Buat PO Baru +</button>
+            </div>
+            <div class="card-panel table-container">
+                <table class="rp-table">
+                    <thead><tr><th>ORDER ID</th><th>KLIEN</th><th>PRODUK</th><th>JUMLAH</th><th>Tgl TARGET</th><th>AKSI</th></tr></thead>
+                    <tbody>
+                        <tr><td>PO - 2310 - 001</td><td>PT. Sumber Alfaria Trijaya</td><td>Indomie Mi Goreng Special</td><td>150,000 Dus</td><td>28 Okt 2023</td><td><button class="btn-verif">Verifikasi</button></td></tr>
+                        <tr><td>PO - 2310 - 002</td><td>PT. Indomarco Prismatama</td><td>Indomie Rasa Ayam Bawang</td><td>85,000 Dus</td><td>30 Okt 2023</td><td><button class="btn-verif">Verifikasi</button></td></tr>
+                        <tr><td>PO - 2310 - 003</td><td>CV. Makmur Sentosa</td><td>Chitato Rasa Sapi Panggang</td><td>40,000 Dus</td><td>02 Nov 2023</td><td><button class="btn-verif">Verifikasi</button></td></tr>
+                        <tr><td>PO - 2310 - 004</td><td>PT. Lotte Shopping Indonesia</td><td>Pop Mie Rasa Ayam Peda</td><td>60,000 Dus</td><td>05 Nov 2023</td><td><button class="btn-verif">Verifikasi</button></td></tr>
+                        <tr><td>PO - 2310 - 005</td><td>PT. Trans Retail Indonesia</td><td>Indomilk Susu UHT Full Cream</td><td>100,000 Dus</td><td>06 Nov 2023</td><td><button class="btn-verif">Verifikasi</button></td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <div class="page-num active">1</div>
+                    <div class="page-num" onclick="switchView('rencana-page2')">2</div>
+                    <div class="page-num">3</div><div class="page-num">4</div><div class="page-num">5</div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ===================== RENCANA PRODUKSI — PAGE 2 ===================== -->
+        <div id="view-rencana-page2" class="view-section">
+            <div class="rp-header-container">
+                <div class="page-header" style="margin-bottom:5px;"><h1 style="font-size:32px;">Antrean Verifikasi Permintaan Produksi</h1></div>
+                <button class="btn-outline" onclick="switchView('form-rencana')">Buat PO Baru +</button>
+            </div>
+            <div class="card-panel table-container">
+                <table class="rp-table">
+                    <thead><tr><th>ORDER ID</th><th>KLIEN</th><th>PRODUK</th><th>JUMLAH</th><th>Tgl TARGET</th><th>AKSI</th></tr></thead>
+                    <tbody>
+                        <tr><td>PO - 2310 - 007</td><td>PT. Sumber Alfaria Trijaya</td><td>Indomie Mi Goreng Special</td><td>150,000 Dus</td><td>28 Okt 2023</td><td><button class="btn-verif">Verifikasi</button></td></tr>
+                        <tr><td>PO - 2310 - 008</td><td>PT. Indomarco Prismatama</td><td>Indomie Rasa Ayam Bawang</td><td>85,000 Dus</td><td>30 Okt 2023</td><td><button class="btn-verif">Verifikasi</button></td></tr>
+                        <tr><td>PO - 2310 - 009</td><td>CV. Makmur Sentosa</td><td>Chitato Rasa Sapi Panggang</td><td>40,000 Dus</td><td>02 Nov 2023</td><td><button class="btn-verif">Verifikasi</button></td></tr>
+                        <tr><td>PO - 2310 - 010</td><td>PT. Lotte Shopping Indonesia</td><td>Pop Mie Rasa Ayam Peda</td><td>60,000 Dus</td><td>05 Nov 2023</td><td><button class="btn-verif">Verifikasi</button></td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <div class="page-num" onclick="switchView('rencana')">1</div>
+                    <div class="page-num active">2</div>
+                    <div class="page-num">3</div><div class="page-num">4</div><div class="page-num">5</div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ===================== RENCANA PRODUKSI — FORM ===================== -->
+        <div id="view-form-rencana" class="view-section">
+            <div class="back-btn-wrapper">
+                <button class="btn-back" onclick="switchView('rencana')"><i class="fas fa-arrow-left"></i></button>
+                <div class="card-panel" style="max-width:700px; width:100%; margin-top:0;">
+                    <div class="form-header-blue"><h2>Form Tambah/Edit Rencana Produksi</h2></div>
+                    <div class="input-group"><label>Nomor PO</label><input type="text" placeholder=""></div>
+                    <div class="input-group"><label>Pilih Rencana Produksi</label><input type="text" placeholder="Indomie Goreng"></div>
+                    <div class="input-group"><label>Jumlah Rencana Produksi</label><input type="text" placeholder="50,000 Dus"></div>
+                    <div class="input-group"><label>Target Selesai</label><input type="text" placeholder=""></div>
+                    <div style="display:flex; justify-content:flex-end; margin-top:30px;">
+                        <button class="btn-terbitkan" onclick="switchView('rencana')">Simpan Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ===================== FORM PERINTAH KERJA — TABLE PAGE 1 ===================== -->
+        <div id="view-po" class="view-section">
+            <div class="page-header" style="margin-bottom:8px;">
+                <h1>Monitoring Perintah Kerja</h1>
+                <p class="po-page-subtitle">Kelola dan pantau status perintah kerja aktif di seluruh lini produksi</p>
+            </div>
+            <button class="btn-outline" style="margin-bottom:20px;" onclick="switchView('form-po')">Buat PO Baru +</button>
+            <div class="card-panel table-container">
+                <table class="rp-table">
+                    <thead>
+                        <tr>
+                            <th>NOMOR PO</th><th>LINI PRODUKSI</th><th>PRODUK</th>
+                            <th class="center">TARGET QTY</th><th>Tgl DITERBITKAN</th>
+                            <th class="center">STATUS</th><th class="center">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>PO - 2023 - 001</td><td>Line A - Noodle Core</td><td>Indomie Mi Goreng - Special</td><td class="center" style="color:var(--text-main);">50,000</td><td>24 Okt 2023</td><td class="center"><span class="badge badge-draft">Draft</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                        <tr><td>PO - 2023 - 002</td><td>Line B - Noodle Speciality</td><td>Indomie Rasa Ayam Bawang</td><td class="center" style="color:var(--text-main);">120,000</td><td>24 Okt 2023</td><td class="center"><span class="badge badge-aktif">Aktif</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                        <tr><td>PO - 2023 - 003</td><td>Line C - Snack Extrusion</td><td>Pop Mie Rasa Ayam Pedas</td><td class="center" style="color:var(--text-main);">25,000</td><td>25 Okt 2023</td><td class="center"><span class="badge badge-aktif">Aktif</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                        <tr><td>PO - 2023 - 004</td><td>Line A - Noodle Core</td><td>Indomie Mi Goreng - Special</td><td class="center" style="color:var(--text-main);">50,000</td><td>24 Okt 2023</td><td class="center"><span class="badge badge-draft">Draft</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                        <tr><td>PO - 2023 - 005</td><td>Line B - Noodle Speciality</td><td>Indomie Rasa Ayam Bawang</td><td class="center" style="color:var(--text-main);">120,000</td><td>24 Okt 2023</td><td class="center"><span class="badge badge-aktif">Aktif</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                        <tr><td>PO - 2023 - 006</td><td>Line C - Snack Extrusion</td><td>Pop Mie Rasa Ayam Pedas</td><td class="center" style="color:var(--text-main);">25,000</td><td>25 Okt 2023</td><td class="center"><span class="badge badge-aktif">Aktif</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <div class="page-num active">1</div>
+                    <div class="page-num" onclick="switchView('po-page2')">2</div>
+                    <div class="page-num">3</div><div class="page-num">4</div><div class="page-num">5</div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ===================== FORM PERINTAH KERJA — TABLE PAGE 2 ===================== -->
+        <div id="view-po-page2" class="view-section">
+            <div class="page-header" style="margin-bottom:8px;">
+                <h1>Monitoring Perintah Kerja</h1>
+                <p class="po-page-subtitle">Kelola dan pantau status perintah kerja aktif di seluruh lini produksi</p>
+            </div>
+            <button class="btn-outline" style="margin-bottom:20px;" onclick="switchView('form-po')">Buat PO Baru +</button>
+            <div class="card-panel table-container">
+                <table class="rp-table">
+                    <thead>
+                        <tr>
+                            <th>NOMOR PO</th><th>LINI PRODUKSI</th><th>PRODUK</th>
+                            <th class="center">TARGET QTY</th><th>Tgl DITERBITKAN</th>
+                            <th class="center">STATUS</th><th class="center">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>PO - 2023 - 007</td><td>Line A - Noodle Core</td><td>Indomie Mi Goreng - Special</td><td class="center" style="color:var(--text-main);">50,000</td><td>24 Okt 2023</td><td class="center"><span class="badge badge-draft">Draft</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                        <tr><td>PO - 2023 - 008</td><td>Line B - Noodle Speciality</td><td>Indomie Rasa Ayam Bawang</td><td class="center" style="color:var(--text-main);">120,000</td><td>24 Okt 2023</td><td class="center"><span class="badge badge-aktif">Aktif</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                        <tr><td>PO - 2023 - 009</td><td>Line C - Snack Extrusion</td><td>Pop Mie Rasa Ayam Pedas</td><td class="center" style="color:var(--text-main);">25,000</td><td>25 Okt 2023</td><td class="center"><span class="badge badge-aktif">Aktif</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                        <tr><td>PO - 2023 - 010</td><td>Line A - Noodle Core</td><td>Indomie Mi Goreng - Special</td><td class="center" style="color:var(--text-main);">50,000</td><td>24 Okt 2023</td><td class="center"><span class="badge badge-draft">Draft</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                        <tr><td>PO - 2023 - 011</td><td>Line B - Noodle Speciality</td><td>Indomie Rasa Ayam Bawang</td><td class="center" style="color:var(--text-main);">120,000</td><td>24 Okt 2023</td><td class="center"><span class="badge badge-aktif">Aktif</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                        <tr><td>PO - 2023 - 012</td><td>Line C - Snack Extrusion</td><td>Pop Mie Rasa Ayam Pedas</td><td class="center" style="color:var(--text-main);">25,000</td><td>25 Okt 2023</td><td class="center"><span class="badge badge-aktif">Aktif</span></td><td class="center"><button class="btn-cetak">Cetak PDF</button></td></tr>
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <div class="page-num" onclick="switchView('po')">1</div>
+                    <div class="page-num active">2</div>
+                    <div class="page-num">3</div><div class="page-num">4</div><div class="page-num">5</div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ===================== FORM PERINTAH KERJA — FORM ===================== -->
+        <div id="view-form-po" class="view-section">
+            <div class="back-btn-wrapper">
+                <button class="btn-back" onclick="switchView('po')"><i class="fas fa-arrow-left"></i></button>
+                <div class="card-panel" style="max-width:860px; width:100%; margin-top:0;">
+                    <div class="form-header-blue"><h2>Form Tambah/Edit Perintah Kerja</h2></div>
+                    <div class="po-form-grid">
+                        <div><div class="input-group"><label>Nomor PO</label><input type="text" placeholder="Contoh: PO-2023-013"></div></div>
+                        <div><div class="input-group"><label>Target Selesai</label><input type="date"></div></div>
+                        <div><div class="input-group"><label>Pilih Rencana Produksi</label><select><option value="" disabled selected>Indomie Goreng</option><option>Indomie Mi Goreng - Special</option><option>Indomie Rasa Ayam Bawang</option><option>Pop Mie Rasa Ayam Pedas</option><option>Chitato Rasa Sapi Panggang</option><option>Indomilk Susu UHT Full Cream</option></select></div></div>
+                        <div style="grid-row: 2 / 5;"><div class="input-group"><label>Catatan Khusus</label><textarea placeholder="Masukan instruksi tambahan untuk tim operasional (opsional)" style="height:180px; resize:none;"></textarea></div></div>
+                        <div><div class="input-group"><label>Lini Produksi</label><select><option value="" disabled selected>Pilih Opsi Line</option><option>Line A - Noodle Core</option><option>Line B - Noodle Speciality</option><option>Line C - Snack Extrusion</option><option>Line D - Dairy Processing</option></select></div></div>
+                        <div><div class="input-group"><label>Jumlah Rencana Produksi</label><input type="text" placeholder="50,000 Dus"></div></div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; margin-top:36px;">
+                        <button class="btn-terbitkan" onclick="handleTerbitkan()">Terbitkan Perintah Kerja</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ================================================================
+             ✅ NEW: PROSES PRODUKSI — Kanban Board
+        ================================================================ -->
+        <div id="view-proses" class="view-section">
+            <div class="page-header">
+                <h1>Proses Produksi</h1>
+                <p>Pelacakan lini real-time produksi aktif</p>
+            </div>
+
+            <div class="kanban-board">
+
+                <!-- ── Column 1: TO DO ── -->
+                <div class="kanban-col">
+                    <div class="kanban-col-header">
+                        <span class="kanban-col-title">To Do</span>
+                        <span class="kanban-count">3</span>
+                    </div>
+
+                    <!-- Card: PO-2023-089 -->
+                    <div class="kanban-card">
+                        <div class="kanban-card-top">
+                            <span class="po-chip">PO-2023-089</span>
+                            <button class="card-menu-btn">···</button>
+                        </div>
+                        <div class="kanban-card-title">Indomie Ayam Bawang</div>
+                        <div class="kanban-card-line">
+                            <i class="fas fa-user-tie"></i> Lini C
+                        </div>
+                        <div class="kanban-card-footer-row">
+                            <span>Target: 10,000 Karton</span>
+                            <span>Est. 14:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Card: PO-2023-090 -->
+                    <div class="kanban-card">
+                        <div class="kanban-card-top">
+                            <span class="po-chip">PO-2023-090</span>
+                            <button class="card-menu-btn">···</button>
+                        </div>
+                        <div class="kanban-card-title">Indomie Soto Mie</div>
+                        <div class="kanban-card-line">
+                            <i class="fas fa-user-tie"></i> Lini B
+                        </div>
+                        <div class="kanban-card-footer-row">
+                            <span>Target: 8,500 Karton</span>
+                            <span>Est. 16:30</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Column 2: SEDANG DIPROSES ── -->
+                <div class="kanban-col">
+                    <div class="kanban-col-header">
+                        <span class="kanban-col-title">Sedang Diproses (On Line)</span>
+                        <span class="kanban-count blue">2</span>
+                    </div>
+
+                    <!-- Card: PO-2023-001 -->
+                    <div class="kanban-card">
+                        <div class="kanban-card-top">
+                            <span class="po-chip">PO-2023-001</span>
+                            <span class="status-active">Active</span>
+                        </div>
+                        <div class="kanban-card-title">Indomie Goreng Special</div>
+                        <div class="kanban-card-line">
+                            <i class="fas fa-user-tie"></i> Lini A
+                        </div>
+                        <div class="progress-section">
+                            <div class="progress-header">
+                                <span class="progress-label">Progress</span>
+                                <span class="progress-pct">68%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 68%;"></div>
+                            </div>
+                            <div class="progress-qty">10,200 / 15,000 Karton</div>
+                        </div>
+                    </div>
+
+                    <!-- Card: PO-2023-045 -->
+                    <div class="kanban-card">
+                        <div class="kanban-card-top">
+                            <span class="po-chip">PO-2023-045</span>
+                            <span class="status-active">Active</span>
+                        </div>
+                        <div class="kanban-card-title">Pop Mie Kari Ayam</div>
+                        <div class="kanban-card-line">
+                            <i class="fas fa-user-tie"></i> Lini D
+                        </div>
+                        <div class="progress-section">
+                            <div class="progress-header">
+                                <span class="progress-label">Progress</span>
+                                <span class="progress-pct">32%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" style="width: 32%;"></div>
+                            </div>
+                            <div class="progress-qty">1,600 / 5,000 Karton</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Column 3: QUALITY CHECK ── -->
+                <div class="kanban-col">
+                    <div class="kanban-col-header">
+                        <span class="kanban-col-title">Quality Check</span>
+                        <span class="kanban-count orange">1</span>
+                    </div>
+
+                    <!-- Card: PO-2023-012 -->
+                    <div class="kanban-card">
+                        <div class="kanban-card-top">
+                            <span class="po-chip-yellow">PO-2023-012</span>
+                            <i class="fas fa-clipboard-check" style="color:#EA580C; font-size:15px;"></i>
+                        </div>
+                        <div class="kanban-card-title">Indomie Rasa Kaldu Ayam</div>
+                        <div class="kanban-card-line">
+                            <i class="fas fa-user-tie"></i> Lab QA 1
+                        </div>
+                        <div class="kanban-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Menunggu hasil uji sampel B
+                        </div>
+                        <div class="kanban-card-footer-row" style="margin-top: 4px;">
+                            <span>Total: 12,000 Karton</span>
+                            <span>Selesai: 11:45</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- end .kanban-board -->
+
+            <!-- Pengaturan card (partially visible in design) -->
+            <div class="pengaturan-card">
+                <i class="fas fa-sliders-h" style="color: var(--primary); font-size: 18px;"></i>
+                <h3>Pengaturan</h3>
+            </div>
+
+        </div><!-- end view-proses -->
+
+
+        <!-- ================================================================
+             ✅ NEW: INPUT HASIL PRODUKSI — Quality Check Form
+        ================================================================ -->
+        <div id="view-input" class="view-section">
+            <div class="page-header">
+                <h1>Work Order (Quality Check)</h1>
+            </div>
+
+            <div class="input-split-layout">
+
+                <!-- Left panel: WO list -->
+                <div class="wo-list-panel">
+
+                    <div class="wo-list-item selected" onclick="selectWO(this, 'PO-2023-001', 'Indomie Mi Goreng')">
+                        <div class="wo-po-row">
+                            <span class="wo-po-num">PO-2023-001</span>
+                            <span class="badge-qc">Quality Check</span>
+                        </div>
+                        <div class="wo-product-name">Indomie Mi Goreng</div>
+                        <div class="wo-line-text">Line 3 - Shift A</div>
+                    </div>
+
+                    <div class="wo-list-item" onclick="selectWO(this, 'PO-2023-045', 'Indomie Ayam Bawang')">
+                        <div class="wo-po-row">
+                            <span class="wo-po-num">PO-2023-045</span>
+                            <span class="badge-qc">Quality Check</span>
+                        </div>
+                        <div class="wo-product-name">Indomie Ayam Bawang</div>
+                        <div class="wo-line-text">Line 1 - Shift A</div>
+                    </div>
+
+                    <div class="wo-list-item" onclick="selectWO(this, 'PO-2023-088', 'Pop Mie Kari Ayam')">
+                        <div class="wo-po-row">
+                            <span class="wo-po-num">PO-2023-088</span>
+                            <span class="badge-qc">Quality Check</span>
+                        </div>
+                        <div class="wo-product-name">Pop Mie Kari Ayam</div>
+                        <div class="wo-line-text">Line 5 - Shift B</div>
+                    </div>
+
+                </div><!-- end wo-list-panel -->
+
+                <!-- Right panel: form -->
+                <div>
+                    <h2 class="wo-form-title" id="wo-form-title">Input Hasil Produksi - PO-2023-001</h2>
+
+                    <div class="input-dual-row">
+                        <div>
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label>Jumlah Produk Baik (Actual Good)</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="input-good" value="0" min="0">
+                                    <span class="unit-label">Karton</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="input-group" style="margin-bottom:0;">
+                                <label>Jumlah Produk Cacat (Defect)</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="input-defect" value="0" min="0">
+                                    <span class="unit-label">Karton</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wo-form-textarea" style="margin-bottom: 0;">
+                        <label>Catatan Khusus (Quality Issues/Downtime)</label>
+                        <textarea id="input-catatan" placeholder="Masukkan catatan operasional atau temuan kualitas..."></textarea>
+                    </div>
+
+                    <button class="btn-selesaikan" onclick="handleSelesaikan()">
+                        <i class="fas fa-check-circle"></i>
+                        Selesaikan Produksi
+                    </button>
+
+                    <div class="info-banner">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Pastikan jumlah fisik sesuai dengan data sistem sebelum melakukan penyelesaian produksi. Data yang di-submit akan langsung memotong alokasi material.</p>
+                    </div>
+
+                </div><!-- end right panel -->
+
+            </div><!-- end input-split-layout -->
+        </div><!-- end view-input -->
+
+
+        <!-- ================================================================
+             ✅ NEW: RIWAYAT PRODUKSI — History Log + Summary Stats
+        ================================================================ -->
+        <div id="view-riwayat" class="view-section active">
+            <div class="page-header">
+                <h1>Riwayat Produksi</h1>
+                <p>Log data produksi historis yang telah di selesaikan dan masuk ke inventaris.</p>
+            </div>
+
+            <div class="riwayat-toolbar">
+                <button class="btn-filter-riwayat">
+                    <i class="fas fa-sliders-h"></i> Filter
+                </button>
+                <button class="btn-export-file">Export File</button>
+            </div>
+
+            <div class="card-panel" style="padding: 0; overflow: hidden; margin-bottom: 0;">
+                <table class="riwayat-table">
+                    <thead>
+                        <tr>
+                            <th>Nomor PO</th>
+                            <th>Produk</th>
+                            <th>Waktu Selesai</th>
+                            <th>Quantity</th>
+                            <th>Defect</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PO - 2310 - 007</td>
+                            <td>Indomie Mi Goreng Special</td>
+                            <td>28 Okt 2023</td>
+                            <td>150,000 Dus</td>
+                            <td>12</td>
+                            <td><span class="badge-selesai">Selesai</span></td>
+                        </tr>
+                        <tr>
+                            <td>PO - 2310 - 008</td>
+                            <td>Indomie Rasa Ayam Bawang</td>
+                            <td>30 Okt 2023</td>
+                            <td>85,000 Dus</td>
+                            <td>8</td>
+                            <td><span class="badge-selesai">Selesai</span></td>
+                        </tr>
+                        <tr>
+                            <td>PO - 2310 - 009</td>
+                            <td>Chitato Rasa Sapi Panggang</td>
+                            <td>02 Nov 2023</td>
+                            <td>40,000 Dus</td>
+                            <td>21</td>
+                            <td><span class="badge-selesai">Selesai</span></td>
+                        </tr>
+                        <tr>
+                            <td>PO - 2310 - 010</td>
+                            <td>Pop Mie Rasa Ayam Peda</td>
+                            <td>05 Nov 2023</td>
+                            <td>60,000 Dus</td>
+                            <td>0</td>
+                            <td><span class="badge-selesai">Selesai</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Centered pagination -->
+            <div class="riwayat-pagination">
+                <button class="rpg-btn" onclick="alert('Halaman 1')">1</button>
+                <button class="rpg-btn rpg-active">2</button>
+                <button class="rpg-btn" onclick="alert('Halaman 3')">3</button>
+                <button class="rpg-btn" onclick="alert('Halaman 4')">4</button>
+                <button class="rpg-btn" onclick="alert('Halaman 5')">5</button>
+            </div>
+
+            <!-- Summary stat cards -->
+            <div class="stats-summary-grid">
+                <div class="stat-summary-card">
+                    <div class="stat-summary-label">
+                        Total Produksi Bulan Ini
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="stat-summary-value c-blue">2.148.900</div>
+                </div>
+                <div class="stat-summary-card">
+                    <div class="stat-summary-label">
+                        Tingkat Defect (Avg)
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="stat-summary-value c-red">0,024%</div>
+                </div>
+                <div class="stat-summary-card">
+                    <div class="stat-summary-label">
+                        Efesiensi Mesin
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <div class="stat-summary-value c-green">98,4%</div>
+                </div>
+            </div>
+
+        </div><!-- end view-riwayat -->
+
+    </main>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast-notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message">Berhasil disimpan!</span>
+    </div>
+
+
+    <script>
+        // ==============================
+        // 1. SPA NAVIGATION
+        // ==============================
+        function switchView(viewId, navElement = null) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            const target = document.getElementById('view-' + viewId);
+            if (target) target.classList.add('active');
+
+            const navMap = {
+                'dashboard': 0, 'profil': 0, 'keamanan': 0,
+                'rencana': 1, 'rencana-page2': 1, 'form-rencana': 1,
+                'po': 2, 'po-page2': 2, 'form-po': 2,
+                'proses': 3,
+                'input': 4,
+                'riwayat': 5
+            };
+
+            if (navElement) {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                navElement.classList.add('active');
+            } else if (viewId in navMap) {
+                const items = document.querySelectorAll('.nav-item');
+                items.forEach(i => i.classList.remove('active'));
+                const idx = navMap[viewId];
+                if (items[idx]) items[idx].classList.add('active');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==============================
+        // 2. MODAL / DROPDOWN
+        // ==============================
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            document.querySelectorAll('.dropdown-modal').forEach(m => {
+                if (m.id !== modalId) m.classList.remove('show');
+            });
+            modal.classList.toggle('show');
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.closest('.header-actions')) {
+                document.querySelectorAll('.dropdown-modal').forEach(m => m.classList.remove('show'));
+            }
+        };
+
+        // ==============================
+        // 3. TOAST NOTIFICATION
+        // ==============================
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        // ==============================
+        // 4. FORM PO — SUBMIT HANDLER
+        // ==============================
+        function handleTerbitkan() {
+            const nomorPO = document.querySelector('#view-form-po input[placeholder="Contoh: PO-2023-013"]').value.trim();
+            const jumlah  = document.querySelector('#view-form-po input[placeholder="50,000 Dus"]').value.trim();
+
+            if (!nomorPO || !jumlah) {
+                alert('Mohon lengkapi Nomor PO dan Jumlah Rencana Produksi terlebih dahulu.');
+                return;
+            }
+
+            showToast(`Perintah Kerja ${nomorPO} berhasil diterbitkan!`);
+            switchView('po');
+        }
+
+        // ==============================
+        // 5. INPUT HASIL — WO SELECTION
+        // ==============================
+        function selectWO(el, poNum, productName) {
+            document.querySelectorAll('.wo-list-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            document.getElementById('wo-form-title').textContent = 'Input Hasil Produksi - ' + poNum;
+            document.getElementById('input-good').value    = '0';
+            document.getElementById('input-defect').value  = '0';
+            document.getElementById('input-catatan').value = '';
+        }
+
+        // ==============================
+        // 6. INPUT HASIL — SELESAIKAN
+        // ==============================
+        function handleSelesaikan() {
+            const good   = parseInt(document.getElementById('input-good').value)   || 0;
+            const defect = parseInt(document.getElementById('input-defect').value) || 0;
+            const title  = document.getElementById('wo-form-title').textContent;
+            const poNum  = title.replace('Input Hasil Produksi - ', '');
+
+            if (good === 0) {
+                alert('Mohon masukkan Jumlah Produk Baik (Actual Good) terlebih dahulu.');
+                return;
+            }
+
+            showToast(`Produksi ${poNum} berhasil diselesaikan! (${good.toLocaleString('id-ID')} Karton)`);
+            // Redirect to riwayat after short delay
+            setTimeout(() => switchView('riwayat'), 500);
+        }
+
+        // ==============================
+        // 7. CHART.JS — PRODUCTION CHART
+        // ==============================
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById('productionChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            let gradBlue = ctx.createLinearGradient(0, 0, 0, 320);
+            gradBlue.addColorStop(0, 'rgba(0, 71, 186, 0.2)');
+            gradBlue.addColorStop(1, 'rgba(0, 71, 186, 0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+                    datasets: [
+                        {
+                            label: 'Actual Output',
+                            data: [64000,71000,67000,84000,81000,49000,44000],
+                            borderColor: '#0047BA',
+                            backgroundColor: gradBlue,
+                            borderWidth: 3,
+                            pointBackgroundColor: '#FFFFFF',
+                            pointBorderColor: '#0047BA',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Target',
+                            data: [60000,70000,69000,80000,82000,60000,50000],
+                            borderColor: '#D1D5DB',
+                            borderWidth: 2,
+                            borderDash: [5,5],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,62,123,0.9)',
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: c => c.dataset.label + ': ' + c.parsed.y.toLocaleString('id-ID')
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true, max: 90000,
+                            ticks: { callback: v => v/1000+'k', color:'#9CA3AF', stepSize:30000 },
+                            grid: { color:'#F3F4F6', drawBorder:false }
+                        },
+                        x: {
+                            ticks: { color:'#9CA3AF' },
+                            grid: { display:false, drawBorder:false }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
+    <script src="production.js"></script>
+
+    <script src="production.css"></script>
+
+    <script type="module" src="./js/production-data.js"></script>
+
+</body>
+</html>
