@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - FoodSync ERP</title>
+    <style>
+        /* --- 1. Root Variables (Warna & Font) --- */
+        :root {
+            --color-primary-dark: #003E7B;
+            --color-primary-blue: #0071E1;
+            --color-accent-light: #81C0FF;
+            --color-text-black: #000000;
+            --color-text-dark: #1A1A1A;
+            --color-text-grey: #868686;
+            --color-white: #FFFFFF;
+            --color-placeholder: rgba(0, 62, 123, 0.33);
+            --font-main: 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* --- 2. Global Reset & Body --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background: linear-gradient(134deg, var(--color-primary-dark) 0%, var(--color-primary-blue) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* --- 3. Layout Utama (Floating Card) --- */
+        .main-card {
+            width: 85%;
+            max-width: 1000px;
+            height: 85vh;
+            max-height: 550px;
+            background: var(--color-white);
+            border-radius: 40px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* --- 4. Panel Kiri (Form Sign In) --- */
+        .left-panel {
+            flex: 1.2;
+            padding: 40px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .heading-primary {
+            color: var(--color-primary-dark);
+            font-size: 45px;
+            font-weight: 860;
+            margin-bottom: 5px;
+        }
+
+        .subtitle-primary {
+            color: var(--color-primary-dark);
+            font-size: 18px;
+            font-weight: 510;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--color-text-black);
+            font-size: 16px;
+            font-weight: 510;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            height: 50px;
+            border-radius: 12px;
+            border: 2px solid var(--color-primary-blue);
+            padding: 0 15px;
+            font-size: 16px;
+            font-family: var(--font-main);
+            color: var(--color-primary-dark);
+            transition: all 0.3s ease;
+        }
+
+        /* Efek saat input diklik/aktif */
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-primary-dark);
+            box-shadow: 0 0 8px rgba(0, 113, 225, 0.4);
+        }
+
+        .form-input::placeholder {
+            color: var(--color-placeholder);
+        }
+
+        .controls-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0 25px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-text-dark);
+            font-size: 14px;
+            font-weight: 510;
+            cursor: pointer;
+        }
+
+        .text-forgot {
+            color: var(--color-text-grey);
+            font-size: 13px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .text-forgot:hover {
+            color: var(--color-primary-dark);
+        }
+
+        .btn-signin {
+            width: 100%;
+            height: 50px;
+            background: var(--color-primary-dark);
+            color: var(--color-white);
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn-signin:hover {
+            opacity: 0.9;
+        }
+
+        /* --- 5. Panel Kanan (Glassmorphism & Register) --- */
+        .right-panel {
+            width: 400px;
+            background: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1000') center/cover no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glass-container {
+            width: 80%;
+            padding: 40px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px); 
+            border-radius: 30px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .heading-secondary {
+            color: var(--color-white);
+            font-size: 32px;
+            font-weight: 860;
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        .subtitle-secondary {
+            color: var(--color-white);
+            font-size: 14px;
+            font-weight: 510;
+            margin-bottom: 25px;
+        }
+
+        .text-prompt {
+            color: var(--color-accent-light);
+            font-size: 14px;
+            font-weight: 510;
+            margin-bottom: 15px;
+        }
+
+        .btn-register {
+            padding: 12px 40px;
+            background: var(--color-primary-blue);
+            color: var(--color-white);
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 860;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-register:hover {
+            background: #005bb5;
+        }
+
+        /* --- 6. Responsivitas (Mobile View) --- */
+        @media (max-width: 768px) {
+            .main-card {
+                flex-direction: column-reverse;
+                height: auto;
+                max-height: none;
+                border-radius: 20px;
+                overflow-y: auto;
+            }
+            .right-panel { width: 100%; padding: 40px 0; }
+            .left-panel { padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-card">
+        <div class="left-panel">
+            <h1 class="heading-primary">Sign In</h1>
+            <p class="subtitle-primary">Please enter your details</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="emailInput" class="form-input" placeholder="E.g. suep@indofood.co.id" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="passwordInput" class="form-input" placeholder="Enter your password" required>
+                </div>
+
+                <div class="controls-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" checked>
+                        Remember log in activity
+                    </label>
+                    <a class="text-forgot" onclick="alert('Instruksi reset password akan dikirim ke email Anda.')">forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn-signin">Sign In</button>
+            </form>
+        </div>
+
+        <div class="right-panel">
+            <div class="glass-container">
+                <h2 class="heading-secondary">Hey,<br/>Welcome Back!</h2>
+                <p class="subtitle-secondary">We hope you had a great day</p>
+                
+                <p class="text-prompt">Not yet a member?</p>
+                <!-- Menuju ke halaman Register -->
+                <button type="button" class="btn-register" onclick="window.location.href='register.html'">Register</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT INTEGRASI -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Mencegah form memuat ulang halaman
+            
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+
+            if(email !== "" && password !== "") {
+                // INTEGRASI: Mengarahkan ke file dashboard.html
+                window.location.href = 'login.html'; 
+            }
+        });
+    </script>
+
+      <!-- SCRIPT INTEGRASI LOGIN -->
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Mencegah form memuat ulang halaman
+            
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+
+            if(email !== "" && password !== "") {
+                // INTEGRASI: Mengarahkan ke file dashboard.html
+                window.location.href = 'login.html'; 
+            }
+        });
+    </script>
+
+    <!-- SCRIPT INTEGRASI LOGIN -->
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Mencegah form memuat ulang halaman secara bawaan
+            
+            const email = document.getElementById('emailInput').value.trim();
+            const password = document.getElementById('passwordInput').value.trim();
+
+            if(email !== "" && password !== "") {
+                window.location.href = 'production.html'; 
+} else {
+                alert('Mohon masukkan email dan password Anda.');
+            }
+        });
+
+    <style>
+
+        <script src="logout.html"></script>
+
+</body>
+</html>
