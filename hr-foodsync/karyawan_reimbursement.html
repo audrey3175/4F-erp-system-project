@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengajuan Reimbursement - FoodSync HRMS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { navy: '#003B73', light: '#0055A5' }, background: { main: '#F4F7F9' } }, boxShadow: { 'soft': '0 4px 20px rgba(0, 0, 0, 0.05)', 'fly': '0 10px 40px rgba(0, 0, 0, 0.1)' } } }
+        }
+    </script>
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .toast-enter { animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        .toast-exit  { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastIn  { from { opacity:0; transform:translateX(110%); } to { opacity:1; transform:translateX(0); } }
+        @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(110%); } }
+    </style>
+    <script>
+        (function() {
+            const role = localStorage.getItem('userRole');
+            let css = '';
+            
+            // Tembak CSS untuk menghilangkan menu bahkan sebelum HTML digambar!
+            if (role === 'Karyawan') {
+                css = '#labelManajemen, #menuSupervisor, #menuHrd, #menuPayroll, #menuLaporan { display: none !important; }';
+            } else if (role === 'Supervisor') {
+                css = '#menuHrd, #menuPayroll, #menuLaporan { display: none !important; }';
+            } else if (role === 'HRD') {
+                css = '#menuSupervisor, #menuPayroll { display: none !important; }';
+            } else if (role === 'Payroll') {
+                css = '#menuSupervisor, #menuHrd { display: none !important; }';
+            }
+            
+            if (css) {
+                const style = document.createElement('style');
+                style.innerHTML = css;
+                document.head.appendChild(style);
+            }
+        })();
+    </script>
+</head>
+<body class="bg-background-main font-sans text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR BARU -->
+    <aside class="w-[240px] bg-white border-r border-gray-200 flex flex-col justify-between hidden md:flex shrink-0 z-20 m-4 rounded-xl shadow-sm">
+        <div class="flex-1 overflow-y-auto overflow-x-hidden">
+            <div class="p-6 flex justify-center items-center pb-2">
+                <img src="logo.png" alt="Logo FoodSync" class="w-full max-w-[180px] px-2 object-contain" onerror="this.src='https://placehold.co/180x50/ffffff/003B73?text=FoodSync'">
+            </div>
+            <nav class="px-4 mt-6 space-y-1">
+                <p class="text-[11px] font-semibold text-gray-800 mb-2 mt-2 px-2 tracking-wide uppercase">MENU UTAMA</p>
+                <a href="dashboard.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-border-all w-5 text-center mr-3 text-gray-400"></i> Dashboard</a>
+                
+                <p class="text-[11px] font-semibold text-gray-800 mb-2 mt-5 px-2 tracking-wide uppercase">SELF SERVICE</p>
+                <a href="karyawan.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-fingerprint w-5 text-center mr-3 text-gray-400"></i> Presensi</a>
+                <a href="karyawan_cuti.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-calendar-minus w-5 text-center mr-3 text-gray-400"></i> Pengajuan Cuti</a>
+                <a href="karyawan_reimbursement.html" class="w-full flex items-center px-4 py-2.5 bg-[#E5F0FA] text-brand-light font-bold rounded-xl transition-all text-[13px]"><i class="fa-solid fa-money-bill-wave w-5 text-center mr-3 text-brand-light"></i> Reimbursement</a>
+
+                <p id="labelManajemen" class="text-[11px] font-semibold text-gray-800 mb-2 mt-5 px-2 tracking-wide uppercase">MANAJEMEN</p>
+                <a href="supervisor.html" id="menuSupervisor" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-user-shield w-5 text-center mr-3 text-gray-400"></i> Supervisor</a>
+                <a href="hrd.html" id="menuHrd" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-regular fa-users-gear w-5 text-center mr-3 text-gray-400"></i> HRD</a>
+                <a href="payroll.html" id="menuPayroll" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-file-invoice-dollar w-5 text-center mr-3 text-gray-400"></i> Payroll</a>
+                <a href="laporan.html" id="menuLaporan" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-chart-pie w-5 text-center mr-3 text-gray-400"></i> Laporan</a>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- HEADER UNIVERSAL -->
+        <header class="h-[64px] bg-[#F4F7F9] flex items-center justify-end px-8 shrink-0 z-50 sticky top-0 mt-2 relative">
+            <div class="flex items-center space-x-2 ml-auto">
+                <div class="relative">
+                    <button onclick="window.toggleDropdown('settingsDropdown')" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-[#003B73] transition-colors"><i class="fa-solid fa-gear text-xl"></i></button>
+                                        <div id="settingsDropdown" class="hidden absolute right-0 mt-3 w-[260px] bg-white rounded-3xl shadow-fly border border-gray-100 py-3 fade-in z-50">
+                        <h3 class="px-6 py-2 text-[14px] font-black text-gray-400 uppercase tracking-widest mb-1">Pengaturan</h3>
+                        <a href="profil.html" class="flex items-center px-6 py-3 hover:bg-gray-50 transition cursor-pointer"><i class="fa-regular fa-circle-user text-lg text-gray-400 w-8"></i><p class="text-[14px] font-bold text-gray-700">Profil Saya</p></a>
+                        <a href="keamanan.html" class="flex items-center px-6 py-3 hover:bg-gray-50 transition cursor-pointer"><i class="fa-solid fa-shield-halved text-lg text-gray-400 w-8"></i><p class="text-[14px] font-bold text-gray-700">Keamanan</p></a>
+                        <div class="my-2 border-t border-gray-50"></div>
+                        <div class="px-4 mt-2"><a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a></div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <button onclick="window.toggleDropdown('notifDropdown')" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-[#003B73] transition-colors relative"><i class="fa-regular fa-bell text-xl"></i></button>
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-[340px] bg-white rounded-2xl shadow-fly border border-gray-100 py-3 fade-in z-50 flex flex-col max-h-[500px]">
+                        <div class="px-5 py-2 flex justify-between items-center mb-1 shrink-0"><h3 class="text-[18px] font-extrabold text-gray-900">Notifikasi</h3></div>
+                        <div id="notifList" class="flex-1 overflow-y-auto overflow-x-hidden"><div class="p-5 text-center text-gray-400 text-[12px]">Tidak ada notifikasi</div></div>
+                    </div>
+                </div>
+                <div class="flex items-center pl-4 ml-2">
+                    <div class="text-right hidden sm:block mr-3">
+                        <p id="userDisplayName" class="text-[14px] font-bold text-gray-900 leading-tight">Memuat...</p>
+                        <p class="text-[11px] text-gray-500 font-semibold">Self Service</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-gray-800 text-2xl border-[2.5px] border-gray-800 bg-blue-50 overflow-hidden"><i class="fa-regular fa-user"></i></div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-auto bg-[#F4F7F9]">
+            <div class="px-8 pb-8 max-w-[1000px] mx-auto space-y-6 mt-6">
+                <div class="page-section block fade-in">
+                    
+                    <div class="mb-6 flex justify-between items-end">
+                        <div>
+                            <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Klaim Reimbursement</h1>
+                            <p class="text-[13px] text-gray-500 font-medium mt-0.5">Ajukan penggantian dana operasional, medis, atau keperluan perusahaan lainnya.</p>
+                        </div>
+                        <button onclick="window.location.href='karyawan_reimbursement_riwayat.html'" class="bg-white border border-gray-300 text-gray-700 px-5 py-2.5 rounded-lg text-[13px] font-bold hover:bg-gray-50 shadow-sm transition">
+                            <i class="fa-solid fa-clock-rotate-left mr-2"></i> Riwayat Klaim
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-soft border border-gray-200 p-8">
+                        <form id="formReimburse" class="space-y-6">
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="text-[12px] font-bold text-gray-700 block mb-2">Kategori Klaim</label>
+                                    <div class="relative">
+                                        <select id="insKategori" class="w-full border border-gray-300 rounded-lg p-3 text-[14px] appearance-none focus:outline-none focus:ring-2 focus:ring-brand-light bg-white cursor-pointer font-medium text-gray-700" required>
+                                            <option value="" disabled selected hidden>Pilih Kategori...</option>
+                                            <option value="Medis / Kesehatan">Medis / Kesehatan</option>
+                                            <option value="Transportasi / Dinas">Transportasi & Perjalanan Dinas</option>
+                                            <option value="ATK / Operasional">ATK & Operasional Kantor</option>
+                                            <option value="Lainnya">Lainnya</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-[12px] pointer-events-none"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[12px] font-bold text-gray-700 block mb-2">Total Nominal (Rp)</label>
+                                    <div class="relative flex items-center">
+                                        <span class="absolute left-4 text-gray-500 font-bold text-[14px]">Rp</span>
+                                        <input type="number" id="insNominal" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light text-gray-900 font-extrabold" placeholder="0" required min="1000">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-[12px] font-bold text-gray-700 block mb-2">Judul Pengajuan</label>
+                                <input type="text" id="insJudul" class="w-full border border-gray-300 rounded-lg p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light" placeholder="Contoh: Tiket Kereta Dinas ke Bandung" required>
+                            </div>
+
+                            <div>
+                                <label class="text-[12px] font-bold text-gray-700 block mb-2">Rincian / Catatan</label>
+                                <textarea id="insCatatan" rows="3" class="w-full border border-gray-300 rounded-lg p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light" placeholder="Sebutkan rincian pengeluaran Anda..." required></textarea>
+                            </div>
+
+                            <!-- Simulasi Upload Bukti -->
+                            <div>
+                                <label class="text-[12px] font-bold text-gray-700 block mb-2">Lampirkan Bukti (Nota/Kwitansi/Invoice)</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:bg-gray-50 transition cursor-pointer">
+                                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-brand-light mb-2"></i>
+                                    <p class="text-[13px] text-gray-600 font-medium">Klik untuk mengunggah file bukti pembayaran.</p>
+                                    <p class="text-[11px] text-gray-400 mt-1">Maks. 5MB (JPG, PNG, PDF)</p>
+                                    <!-- Input file disembunyikan agar UI rapi, dipicu via JS -->
+                                    <input type="file" id="insFile" class="hidden" accept=".jpg,.png,.pdf" onchange="document.getElementById('fileName').innerText = this.files[0].name">
+                                    <p id="fileName" class="text-[12px] text-green-600 font-bold mt-2"></p>
+                                </div>
+                                <button type="button" onclick="document.getElementById('insFile').click()" class="mt-2 bg-blue-50 text-brand-light px-4 py-2 rounded font-bold text-[11px] hover:bg-blue-100 transition">Pilih File</button>
+                            </div>
+
+                            <div class="flex justify-end pt-4 border-t border-gray-100">
+                                <button type="submit" id="btnSubmitReimburse" class="bg-[#ea580c] text-white px-8 py-3.5 rounded-xl text-[14px] font-bold hover:bg-orange-700 transition shadow-md flex items-center">
+                                    <i class="fa-regular fa-paper-plane mr-2"></i> Ajukan Klaim Dana
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- SCRIPT DROPDOWN & TOAST -->
+    <script>
+        window.toggleDropdown = function(id) {
+            const dropdown = document.getElementById(id);
+            if(id !== 'settingsDropdown') { const sd = document.getElementById('settingsDropdown'); if (sd) sd.classList.add('hidden'); }
+            if(id !== 'notifDropdown') { const nd = document.getElementById('notifDropdown'); if (nd) nd.classList.add('hidden'); }
+            if(dropdown) dropdown.classList.toggle('hidden');
+        }
+
+        // Tutup dropdown saat klik di luar area dropdown atau tombol pemicunya
+        document.addEventListener('click', function(event) {
+            const sd = document.getElementById('settingsDropdown');
+            const nd = document.getElementById('notifDropdown');
+            if (sd && !sd.contains(event.target) && !event.target.closest('button[onclick*="settingsDropdown"]')) {
+                sd.classList.add('hidden');
+            }
+            if (nd && !nd.contains(event.target) && !event.target.closest('button[onclick*="notifDropdown"]')) {
+                nd.classList.add('hidden');
+            }
+        });
+
+        // Toast notification system
+        window.showToast = function(message, type) {
+            type = type || 'info';
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const id = 'toast-' + Date.now();
+            const cfg = {
+                success: { bg: '#16a34a', icon: 'fa-circle-check' },
+                error:   { bg: '#dc2626', icon: 'fa-circle-xmark' },
+                info:    { bg: '#003B73', icon: 'fa-circle-info' }
+            };
+            const c = cfg[type] || cfg.info;
+            const el = document.createElement('div');
+            el.id = id;
+            el.className = 'pointer-events-auto px-5 py-3.5 rounded-2xl shadow-fly flex items-center gap-3 min-w-[280px] max-w-[380px] toast-enter';
+            el.style.cssText = `background:${c.bg};color:#fff;`;
+            el.innerHTML = `<i class="fa-solid ${c.icon} text-lg shrink-0"></i><span style="font-size:13px;font-weight:600;flex:1;">${message}</span><button onclick="document.getElementById('${id}').remove()" style="opacity:.8;background:none;border:none;cursor:pointer;color:#fff;"><i class="fa-solid fa-xmark"></i></button>`;
+            container.appendChild(el);
+            setTimeout(function() {
+                el.classList.replace('toast-enter', 'toast-exit');
+                setTimeout(function() { if (el.parentNode) el.remove(); }, 320);
+            }, 4500);
+        };
+    </script>
+
+    <!-- FIREBASE LOGIC & RBAC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8", authDomain: "modul-hr-c889c.firebaseapp.com", projectId: "modul-hr-c889c", storageBucket: "modul-hr-c889c.firebasestorage.app", messagingSenderId: "422365405521", appId: "1:422365405521:web:79e314f0c8b54161dc3370" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let userEmail = "";
+
+        // RBAC & AUTHENTICATION
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                userEmail = user.email;
+                const emailPrefix = user.email.split('@')[0];
+                const namaKapital = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+                document.getElementById('userDisplayName').innerText = namaKapital;
+
+                const userRole = localStorage.getItem('userRole');
+                if (!userRole) { signOut(auth); window.location.replace("index.html"); return; }
+
+                // HIDE MENUS BASED ON ROLE
+                const navLinks = document.querySelectorAll('aside nav a');
+                navLinks.forEach(menu => {
+                    const url = menu.getAttribute('href');
+                    if (userRole === 'Karyawan' && (url.includes('supervisor') || url.includes('hrd') || url.includes('payroll') || url.includes('laporan'))) menu.style.display = 'none';
+                    else if (userRole === 'Supervisor' && (url.includes('hrd') || url.includes('payroll') || url.includes('laporan'))) menu.style.display = 'none';
+                    else if (userRole === 'HRD' && (url.includes('supervisor') || url.includes('payroll'))) menu.style.display = 'none';
+                    else if (userRole === 'Payroll' && (url.includes('supervisor') || url.includes('hrd'))) menu.style.display = 'none';
+                });
+            } else { window.location.replace("index.html"); }
+        });
+
+        window.prosesLogout = function() {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('originalRole');
+            signOut(auth).then(() => { window.location.replace("index.html"); });
+        };
+
+        // SUBMIT FORM REIMBURSEMENT
+        document.getElementById('formReimburse').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const kategori  = document.getElementById('insKategori').value;
+            const nominalRaw = document.getElementById('insNominal').value;
+            const nominal   = Number(nominalRaw);
+            const judul     = document.getElementById('insJudul').value.trim();
+            const catatan   = document.getElementById('insCatatan').value.trim();
+            const fileInput = document.getElementById('insFile');
+            const namaFile  = fileInput.files.length > 0 ? fileInput.files[0].name : '';
+
+            // ── Validasi JavaScript sebelum submit ──
+            if (!nominalRaw || isNaN(nominal) || nominal <= 0) {
+                window.showToast('Nominal harus berupa angka yang valid dan lebih besar dari 0.', 'error');
+                return;
+            }
+            if (nominal < 1000) {
+                window.showToast('Nominal minimum klaim adalah Rp 1.000.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitReimburse');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memproses...';
+
+            try {
+                await addDoc(collection(db, "reimbursement"), {
+                    email: userEmail,
+                    kategori: kategori,
+                    nominal: nominal,
+                    judul: judul,
+                    catatan: catatan,
+                    namaFile: namaFile,
+                    status: "MENUNGGU", // Antrean Supervisor
+                    createdAt: new Date().getTime()
+                });
+
+                window.showToast('Klaim reimbursement berhasil dikirim! Menunggu persetujuan Supervisor.', 'success');
+                // Delay agar toast sempat terlihat sebelum redirect
+                setTimeout(() => { window.location.href = 'karyawan_reimbursement_riwayat.html'; }, 1800);
+            } catch (error) {
+                window.showToast('Gagal mengirim klaim: ' + error.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-regular fa-paper-plane mr-2"></i> Ajukan Klaim Dana';
+            }
+        });
+    </script>
+</body>
+</html>
+

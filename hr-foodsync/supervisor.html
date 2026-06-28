@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Dashboard - FoodSync HRMS</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { navy: '#003B73', light: '#0055A5' },
+                        background: { main: '#F4F7F9' }
+                    },
+                    boxShadow: { 
+                        'soft': '0 4px 20px rgba(0, 0, 0, 0.03)',
+                        'fly': '0 10px 40px rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .notif-item:hover .btn-delete { display: flex; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+        .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .toast-enter { animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        .toast-exit  { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastIn  { from { opacity:0; transform:translateX(110%); } to { opacity:1; transform:translateX(0); } }
+        @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(110%); } }
+    </style>
+
+    <script>
+        (function() {
+            const role = localStorage.getItem('userRole');
+            let css = '';
+            
+            if (role === 'Karyawan') {
+                css = '#labelManajemen, #menuSupervisor, #menuHrd, #menuPayroll, #menuLaporan { display: none !important; }';
+            } else if (role === 'Supervisor') {
+                css = '#menuHrd, #menuPayroll, #menuLaporan { display: none !important; }';
+            } else if (role === 'HRD') {
+                css = '#menuSupervisor, #menuPayroll { display: none !important; }';
+            } else if (role === 'Payroll') {
+                css = '#menuSupervisor, #menuHrd { display: none !important; }';
+            }
+            
+            if (css) {
+                const style = document.createElement('style');
+                style.innerHTML = css;
+                document.head.appendChild(style);
+            }
+        })();
+    </script>
+</head>
+<body class="bg-background-main font-sans text-gray-800 flex h-screen overflow-hidden">
+
+    <aside class="w-[240px] bg-white border-r border-gray-200 flex flex-col justify-between hidden md:flex shrink-0 z-20 m-4 rounded-xl shadow-sm">
+        <div class="flex-1 overflow-y-auto overflow-x-hidden">
+            <div class="p-6 flex justify-center items-center pb-2">
+                <img src="logo.png" alt="Logo FoodSync" class="w-full max-w-[180px] px-2 object-contain" onerror="this.src='https://placehold.co/180x50/ffffff/003B73?text=FoodSync'">
+            </div>
+            <nav class="px-4 mt-6 space-y-1">
+                <p class="text-[11px] font-semibold text-gray-800 mb-2 mt-2 px-2 tracking-wide uppercase">MENU UTAMA</p>
+                <a href="dashboard.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-border-all w-5 text-center mr-3 text-gray-400"></i> Dashboard</a>
+                
+                <p class="text-[11px] font-semibold text-gray-800 mb-2 mt-5 px-2 tracking-wide uppercase">SELF SERVICE</p>
+                <a href="karyawan.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-fingerprint w-5 text-center mr-3 text-gray-400"></i> Presensi</a>
+                <a href="karyawan_cuti.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-calendar-minus w-5 text-center mr-3 text-gray-400"></i> Pengajuan Cuti</a>
+                <a href="karyawan_reimbursement.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-money-bill-wave w-5 text-center mr-3 text-gray-400"></i> Reimbursement</a>
+
+                <p id="labelManajemen" class="text-[11px] font-semibold text-gray-800 mb-2 mt-5 px-2 tracking-wide uppercase">MANAJEMEN</p>
+                <a href="supervisor.html" id="menuSupervisor" class="w-full flex items-center px-4 py-2.5 bg-[#E5F0FA] text-brand-light rounded-xl font-bold transition-all text-[13px]"><i class="fa-solid fa-user-shield w-5 text-center mr-3 text-brand-light"></i> Supervisor</a>
+                <a href="hrd.html" id="menuHrd" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-regular fa-users-gear w-5 text-center mr-3 text-gray-400"></i> HRD</a>
+                <a href="payroll.html" id="menuPayroll" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-file-invoice-dollar w-5 text-center mr-3 text-gray-400"></i> Payroll</a>
+                <a href="laporan.html" id="menuLaporan" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-chart-pie w-5 text-center mr-3 text-gray-400"></i> Laporan</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        
+        <header class="h-[64px] bg-[#F4F7F9] flex items-center justify-end px-8 shrink-0 z-50 sticky top-0 mt-2 relative">
+            <div class="flex items-center space-x-2 ml-auto">
+                <div class="relative">
+                    <button onclick="window.toggleDropdown('settingsDropdown')" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-[#003B73] transition-colors"><i class="fa-solid fa-gear text-xl"></i></button>
+                                        <div id="settingsDropdown" class="hidden absolute right-0 mt-3 w-[260px] bg-white rounded-3xl shadow-fly border border-gray-100 py-3 fade-in z-50">
+                        <h3 class="px-6 py-2 text-[14px] font-black text-gray-400 uppercase tracking-widest mb-1">Pengaturan</h3>
+                        <a href="profil.html" class="flex items-center px-6 py-3 hover:bg-gray-50 transition cursor-pointer"><i class="fa-regular fa-circle-user text-lg text-gray-400 w-8"></i><p class="text-[14px] font-bold text-gray-700">Profil Saya</p></a>
+                        <a href="keamanan.html" class="flex items-center px-6 py-3 hover:bg-gray-50 transition cursor-pointer"><i class="fa-solid fa-shield-halved text-lg text-gray-400 w-8"></i><p class="text-[14px] font-bold text-gray-700">Keamanan</p></a>
+                        <div class="my-2 border-t border-gray-50"></div>
+                        <div class="px-4 mt-2"><a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a></div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <button onclick="window.toggleDropdown('notifDropdown')" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-[#003B73] transition-colors relative"><i class="fa-regular fa-bell text-xl"></i></button>
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-[340px] bg-white rounded-2xl shadow-fly border border-gray-100 py-3 fade-in z-50 flex flex-col max-h-[500px]">
+                        <div class="px-5 py-2 flex justify-between items-center mb-1 shrink-0"><h3 class="text-[18px] font-extrabold text-gray-900">Notifikasi</h3></div>
+                        <div id="notifList" class="flex-1 overflow-y-auto overflow-x-hidden"><div class="p-5 text-center text-gray-400 text-[12px]">Tidak ada notifikasi</div></div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center pl-4 ml-2">
+                    <div class="text-right hidden sm:block mr-3">
+                        <p id="userDisplayName" class="text-[14px] font-bold text-gray-900 leading-tight">Memuat...</p>
+                        <p class="text-[11px] text-gray-500 font-semibold">Manajer Divisi</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-brand-navy text-2xl border-[2.5px] border-brand-navy bg-white overflow-hidden"><i class="fa-regular fa-user"></i></div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-auto bg-[#F4F7F9]">
+            <div class="px-8 pb-8 max-w-[1400px] mx-auto space-y-6">
+                <div class="page-section block fade-in">
+                    
+                    <div class="mb-6 mt-2">
+                        <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Supervisor Approval Center</h1>
+                        <p class="text-[13px] text-gray-500 font-medium mt-0.5">Tinjau, setujui, atau tolak permohonan cuti dan reimbursement staf dari tim Anda.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-hourglass-half text-amber-500 text-lg"></i>
+                                </div>
+                                <span id="badgePendingCuti" class="text-[10px] font-black px-2 py-1 rounded-lg" style="background:#fffbeb;color:#d97706;">PENDING</span>
+                            </div>
+                            <p id="countPendingCuti" class="text-[32px] font-black text-gray-900 leading-none mb-1">-</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Antrean Cuti</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-receipt text-orange-500 text-lg"></i>
+                                </div>
+                                <span id="badgePendingReimburse" class="text-[10px] font-black px-2 py-1 rounded-lg" style="background:#fff7ed;color:#ea580c;">PENDING</span>
+                            </div>
+                            <p id="countPendingReimburse" class="text-[32px] font-black text-gray-900 leading-none mb-1">-</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Antrean Reimburse</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-circle-check text-green-500 text-lg"></i>
+                                </div>
+                                <span class="text-[10px] font-black px-2 py-1 rounded-lg" style="background:#f0fdf4;color:#16a34a;">ALL TIME</span>
+                            </div>
+                            <p id="countTotalDisetujui" class="text-[32px] font-black text-gray-900 leading-none mb-1">-</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Total Disetujui</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-circle-xmark text-red-400 text-lg"></i>
+                                </div>
+                                <span class="text-[10px] font-black px-2 py-1 rounded-lg" style="background:#fef2f2;color:#ef4444;">ALL TIME</span>
+                            </div>
+                            <p id="countTotalDitolak" class="text-[32px] font-black text-gray-900 leading-none mb-1">-</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Total Ditolak</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-soft border border-gray-200 overflow-hidden mb-6">
+                        <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white">
+                            <h3 class="font-extrabold text-brand-navy text-[15px] flex items-center">
+                                <i class="fa-regular fa-calendar-check mr-2 text-brand-light text-base"></i> Antrean Persetujuan Cuti Karyawan
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-[13px] text-left">
+                                <thead class="text-[11px] text-gray-400 font-bold uppercase tracking-widest border-b border-gray-100 bg-[#F8FAFC]">
+                                    <tr>
+                                        <th class="px-6 py-4">Nama Lengkap Karyawan</th>
+                                        <th class="px-6 py-4">Jenis Cuti</th>
+                                        <th class="px-6 py-4">Rentang Tanggal</th>
+                                        <th class="px-6 py-4 text-center">Durasi</th>
+                                        <th class="px-6 py-4">Alasan</th>
+                                        <th class="px-6 py-4 text-center">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodySupervisorCuti" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <tr><td colspan="6" class="py-6 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Mensinkronisasi database cuti...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-soft border border-gray-200 overflow-hidden">
+                        <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white">
+                            <h3 class="font-extrabold text-brand-navy text-[15px] flex items-center">
+                                <i class="fa-solid fa-receipt mr-2 text-brand-light text-base"></i> Antrean Persetujuan Klaim (Reimbursement)
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-[13px] text-left">
+                                <thead class="text-[11px] text-gray-400 font-bold uppercase tracking-widest border-b border-gray-100 bg-[#F8FAFC]">
+                                    <tr>
+                                        <th class="px-6 py-4">Nama Lengkap Karyawan</th>
+                                        <th class="px-6 py-4">Kategori & Judul</th>
+                                        <th class="px-6 py-4">Nominal Klaim</th>
+                                        <th class="px-6 py-4">Catatan</th>
+                                        <th class="px-6 py-4 text-center">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodySupervisorReimburse" class="divide-y divide-gray-100 font-medium text-gray-700">
+                                    <tr><td colspan="5" class="py-6 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Mensinkronisasi database reimbursement...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
+
+    <script>
+        window.toggleDropdown = function(id) {
+            const dropdown = document.getElementById(id);
+            if(id !== 'settingsDropdown') { const sd = document.getElementById('settingsDropdown'); if (sd) sd.classList.add('hidden'); }
+            if(id !== 'notifDropdown') { const nd = document.getElementById('notifDropdown'); if (nd) nd.classList.add('hidden'); }
+            if(dropdown) dropdown.classList.toggle('hidden');
+        }
+        document.addEventListener('click', function(event) {
+            const isClickInsideSettings = event.target.closest('#settingsDropdown') || event.target.closest('button[onclick="window.toggleDropdown(\\\'settingsDropdown\\\')"]');
+            if (!isClickInsideSettings) { const sd = document.getElementById('settingsDropdown'); if (sd) sd.classList.add('hidden'); }
+        });
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8",
+            authDomain: "modul-hr-c889c.firebaseapp.com",
+            projectId: "modul-hr-c889c",
+            storageBucket: "modul-hr-c889c.firebasestorage.app",
+            messagingSenderId: "422365405521",
+            appId: "1:422365405521:web:79e314f0c8b54161dc3370"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const bulanArr = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+        // countProcessed sekarang ditarik dari Firestore (bukan lagi counter JS).
+        let mapKaryawan = {}; // Penyimpan relasi nama karyawan
+
+        function formatDisplayDate(dateString) {
+            if(!dateString) return "-";
+            const d = new Date(dateString);
+            return `${d.getDate()} ${bulanArr[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        function formatRupiah(angka) { return new Intl.NumberFormat('id-ID').format(angka); }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const emailPrefix = user.email.split('@')[0];
+                const namaKapital = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+                document.getElementById('userDisplayName').innerText = namaKapital;
+                
+                // Mulai menarik data
+                await tarikDataRelasiNama();
+                await muatAntreanSupervisor();
+            } else {
+                window.location.replace("index.html");
+            }
+        });
+
+        window.prosesLogout = function() {
+            signOut(auth).then(() => { window.location.replace("index.html"); });
+        }
+
+        // FUNGSI 1: MENGAMBIL DATABASE MASTER KARYAWAN UNTUK RELASI NAMA
+        async function tarikDataRelasiNama() {
+            try {
+                // Tarik dari koleksi users (registrasi)
+                const snapUsers = await getDocs(collection(db, "users"));
+                snapUsers.forEach(doc => {
+                    const data = doc.data();
+                    if(data.email) mapKaryawan[data.email] = data.namaLengkap;
+                });
+                
+                // Tarik dari koleksi karyawan (HRD input) sebagai cadangan/penimpa
+                const snapKaryawan = await getDocs(collection(db, "karyawan"));
+                snapKaryawan.forEach(doc => {
+                    const data = doc.data();
+                    if(data.email) mapKaryawan[data.email] = data.nama;
+                });
+            } catch (error) {
+                console.log("Error mengambil map relasi nama:", error);
+            }
+        }
+
+        // FUNGSI 2: LOAD ANTRIAN + STATISTIK REAL
+        async function muatAntreanSupervisor() {
+            try {
+                // Ambil semua data secara paralel untuk efisiensi
+                const [snapCuti, snapReimburse, snapCutiSetuju, snapCutiTolak, snapReimbSetuju, snapReimbTolak] = await Promise.all([
+                    getDocs(query(collection(db, "cuti"), where("status", "==", "DIPROSES"))),
+                    getDocs(query(collection(db, "reimbursement"), where("status", "==", "MENUNGGU"))),
+                    getDocs(query(collection(db, "cuti"), where("status", "==", "DISETUJUI"))),
+                    getDocs(query(collection(db, "cuti"), where("status", "==", "DITOLAK"))),
+                    getDocs(query(collection(db, "reimbursement"), where("status", "==", "DISETUJUI"))),
+                    getDocs(query(collection(db, "reimbursement"), where("status", "==", "DITOLAK")))
+                ]);
+
+                // Pending Cuti
+                let listCuti = [];
+                snapCuti.forEach(d => listCuti.push({ id: d.id, ...d.data() }));
+                const jumlahCutiPending = listCuti.length;
+                document.getElementById('countPendingCuti').innerText = jumlahCutiPending;
+                if (jumlahCutiPending > 0) {
+                    document.getElementById('badgePendingCuti').style.cssText = 'background:#fef2f2;color:#ef4444;font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px;';
+                    document.getElementById('badgePendingCuti').innerText = jumlahCutiPending + ' ITEM';
+                } else {
+                    document.getElementById('badgePendingCuti').style.cssText = 'background:#f0fdf4;color:#16a34a;font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px;';
+                    document.getElementById('badgePendingCuti').innerText = 'CLEAR';
+                }
+                renderTabelCuti(listCuti);
+
+                // Pending Reimburse
+                let listReimburse = [];
+                snapReimburse.forEach(d => listReimburse.push({ id: d.id, ...d.data() }));
+                const jumlahReimbPending = listReimburse.length;
+                document.getElementById('countPendingReimburse').innerText = jumlahReimbPending;
+                if (jumlahReimbPending > 0) {
+                    document.getElementById('badgePendingReimburse').style.cssText = 'background:#fef2f2;color:#ef4444;font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px;';
+                    document.getElementById('badgePendingReimburse').innerText = jumlahReimbPending + ' ITEM';
+                } else {
+                    document.getElementById('badgePendingReimburse').style.cssText = 'background:#f0fdf4;color:#16a34a;font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px;';
+                    document.getElementById('badgePendingReimburse').innerText = 'CLEAR';
+                }
+                renderTabelReimburse(listReimburse);
+
+                // Statistik Total Disetujui & Ditolak (dari Firestore, bukan counter JS)
+                const totalDisetujui = snapCutiSetuju.size + snapReimbSetuju.size;
+                const totalDitolak   = snapCutiTolak.size  + snapReimbTolak.size;
+                document.getElementById('countTotalDisetujui').innerText = totalDisetujui;
+                document.getElementById('countTotalDitolak').innerText   = totalDitolak;
+
+            } catch (error) {
+                console.error(error);
+                // Tampilkan error inline di tabel alih-alih alert()
+                const msgErr = `<tr><td colspan="6" class="py-8 text-center"><i class="fa-solid fa-triangle-exclamation text-red-400 text-2xl mb-2 block"></i><p class="text-[13px] text-red-500 font-bold">Gagal memuat data. Periksa koneksi internet Anda.</p></td></tr>`;
+                const t1 = document.getElementById('tbodySupervisorCuti');
+                const t2 = document.getElementById('tbodySupervisorReimburse');
+                if (t1) t1.innerHTML = msgErr;
+                if (t2) t2.innerHTML = msgErr.replace('colspan="6"', 'colspan="5"');
+            }
+        }
+
+        // FUNGSI RENDER CUTI (DENGAN NAMA ASLI)
+        function renderTabelCuti(arr) {
+            const tbody = document.getElementById('tbodySupervisorCuti');
+            tbody.innerHTML = '';
+            if (arr.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="6" class="py-12 text-center">
+                        <i class="fa-solid fa-circle-check text-4xl text-green-200 mb-3 block"></i>
+                        <p class="text-[14px] font-bold text-gray-400">Tidak ada antrean cuti</p>
+                        <p class="text-[12px] text-gray-300 mt-1">Semua pengajuan cuti sudah diproses</p>
+                    </td></tr>`;
+                return;
+            }
+
+            arr.forEach(item => {
+                const namaAsli = mapKaryawan[item.email] || item.email.split('@')[0];
+                const namaCapital = namaAsli.charAt(0).toUpperCase() + namaAsli.slice(1);
+                let tglDisplay = `${formatDisplayDate(item.tglMulai)} &ndash; ${formatDisplayDate(item.tglSelesai)}`;
+                if (item.tglMulai === item.tglSelesai) tglDisplay = formatDisplayDate(item.tglMulai);
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50/60 transition">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-9 h-9 rounded-full flex items-center justify-center mr-3 font-black text-[13px] shrink-0" style="background:#eff6ff;color:#0055A5;">${namaCapital.charAt(0)}</div>
+                                <div class="leading-tight">
+                                    <p class="font-bold text-gray-900 text-[13px]">${namaCapital}</p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5">${item.email}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-[11px] font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-lg" style="background:#eff6ff;color:#0055A5;">${item.jenis}</span>
+                        </td>
+                        <td class="px-6 py-4 text-[13px] text-gray-600 font-medium">${tglDisplay}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="font-black text-gray-900 text-[14px]">${item.durasi}</span>
+                            <span class="text-[11px] text-gray-400 ml-1">hari</span>
+                        </td>
+                        <td class="px-6 py-4 text-[13px] text-gray-500 font-medium max-w-[180px] truncate" title="${item.alasan}">${item.alasan || '-'}</td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="window.prosesKeputusanCuti('${item.id}', 'DISETUJUI')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-extrabold transition" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;" onmouseover="this.style.background='#16a34a';this.style.color='#fff';" onmouseout="this.style.background='#f0fdf4';this.style.color='#16a34a';"><i class="fa-solid fa-check"></i> Setujui</button>
+                                <button onclick="window.prosesKeputusanCuti('${item.id}', 'DITOLAK')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-extrabold transition" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" onmouseover="this.style.background='#dc2626';this.style.color='#fff';" onmouseout="this.style.background='#fef2f2';this.style.color='#dc2626';"><i class="fa-solid fa-xmark"></i> Tolak</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // FUNGSI RENDER REIMBURSEMENT (DENGAN NAMA ASLI)
+        function renderTabelReimburse(arr) {
+            const tbody = document.getElementById('tbodySupervisorReimburse');
+            tbody.innerHTML = '';
+            if (arr.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="5" class="py-12 text-center">
+                        <i class="fa-solid fa-circle-check text-4xl text-green-200 mb-3 block"></i>
+                        <p class="text-[14px] font-bold text-gray-400">Tidak ada antrean reimburse</p>
+                        <p class="text-[12px] text-gray-300 mt-1">Semua pengajuan klaim dana sudah diproses</p>
+                    </td></tr>`;
+                return;
+            }
+
+            arr.forEach(item => {
+                const namaAsli = mapKaryawan[item.email] || item.email.split('@')[0];
+                const namaCapital = namaAsli.charAt(0).toUpperCase() + namaAsli.slice(1);
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50/60 transition">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-9 h-9 rounded-full flex items-center justify-center mr-3 font-black text-[13px] shrink-0" style="background:#fff7ed;color:#ea580c;">${namaCapital.charAt(0)}</div>
+                                <div class="leading-tight">
+                                    <p class="font-bold text-gray-900 text-[13px]">${namaCapital}</p>
+                                    <p class="text-[11px] text-gray-400 mt-0.5">${item.email}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="text-[11px] font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-lg" style="background:#fff7ed;color:#ea580c;">${item.kategori}</span>
+                            <p class="font-bold text-gray-800 text-[13px] mt-1.5">${item.judul || '-'}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="font-black text-gray-900 text-[15px]">Rp ${formatRupiah(item.nominal)}</p>
+                        </td>
+                        <td class="px-6 py-4 text-[13px] text-gray-500 font-medium max-w-[180px] truncate" title="${item.catatan}">${item.catatan || '-'}</td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="window.prosesKeputusanReimburse('${item.id}', 'DISETUJUI')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-extrabold transition" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;" onmouseover="this.style.background='#16a34a';this.style.color='#fff';" onmouseout="this.style.background='#f0fdf4';this.style.color='#16a34a';"><i class="fa-solid fa-check"></i> Setujui</button>
+                                <button onclick="window.prosesKeputusanReimburse('${item.id}', 'DITOLAK')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-extrabold transition" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;" onmouseover="this.style.background='#dc2626';this.style.color='#fff';" onmouseout="this.style.background='#fef2f2';this.style.color='#dc2626';"><i class="fa-solid fa-xmark"></i> Tolak</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ============================================================
+        // TOAST NOTIFICATION SYSTEM
+        // ============================================================
+        function showToast(message, type) {
+            type = type || 'success';
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const id = 'toast-' + Date.now();
+            const cfg = {
+                success: { bg: '#16a34a', icon: 'fa-circle-check' },
+                error:   { bg: '#dc2626', icon: 'fa-circle-xmark' },
+                info:    { bg: '#003B73', icon: 'fa-circle-info' }
+            };
+            const c = cfg[type] || cfg.success;
+            const el = document.createElement('div');
+            el.id = id;
+            el.className = 'pointer-events-auto px-5 py-3.5 rounded-2xl shadow-fly flex items-center gap-3 min-w-[280px] max-w-[380px] toast-enter';
+            el.style.cssText = `background:${c.bg};color:#fff;`;
+            el.innerHTML = `<i class="fa-solid ${c.icon} text-lg shrink-0"></i><span style="font-size:13px;font-weight:600;flex:1;">${message}</span><button onclick="document.getElementById('${id}').remove()" style="opacity:.8;background:none;border:none;cursor:pointer;color:#fff;"><i class="fa-solid fa-xmark"></i></button>`;
+            container.appendChild(el);
+            setTimeout(function() {
+                el.classList.replace('toast-enter', 'toast-exit');
+                setTimeout(function() { if (el.parentNode) el.remove(); }, 320);
+            }, 4000);
+        }
+
+        // AKSI UPDATE STATUS — menggunakan toast, bukan alert()
+        window.prosesKeputusanCuti = async function(id, keputusan) {
+            try {
+                await updateDoc(doc(db, "cuti", id), { status: keputusan });
+                const label = keputusan === 'DISETUJUI' ? 'disetujui ✓' : 'ditolak';
+                const type  = keputusan === 'DISETUJUI' ? 'success' : 'error';
+                showToast(`Pengajuan cuti berhasil ${label}`, type);
+                await muatAntreanSupervisor();
+            } catch (error) {
+                showToast('Gagal memperbarui status: ' + error.message, 'error');
+            }
+        }
+
+        window.prosesKeputusanReimburse = async function(id, keputusan) {
+            try {
+                await updateDoc(doc(db, "reimbursement", id), { status: keputusan });
+                const label = keputusan === 'DISETUJUI' ? 'disetujui ✓' : 'ditolak';
+                const type  = keputusan === 'DISETUJUI' ? 'success' : 'error';
+                showToast(`Klaim reimbursement berhasil ${label}`, type);
+                await muatAntreanSupervisor();
+            } catch (error) {
+                showToast('Gagal memperbarui status: ' + error.message, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
+

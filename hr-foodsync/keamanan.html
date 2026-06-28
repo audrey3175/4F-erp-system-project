@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keamanan - FoodSync HRMS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { navy: '#003B73', light: '#0055A5' },
+                        background: { main: '#F4F7F9' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background-main font-sans text-gray-800 flex flex-col h-screen overflow-hidden">
+
+    <!-- HEADER MINIMALIS -->
+    <header class="h-[64px] bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0 z-10">
+        <div class="flex items-center">
+            <img src="logo.png" alt="Logo" class="h-6 object-contain mr-8">
+            <div class="border-l border-gray-200 pl-8">
+                <h1 class="text-[18px] font-extrabold text-gray-900">Keamanan</h1>
+                <p class="text-[11px] text-gray-500 font-medium">Pusat Informasi Keamanan Akun Anda</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-5">
+            <button onclick="window.history.back()" class="text-sm font-bold text-gray-500 hover:text-brand-navy"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali</button>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-auto bg-[#F4F7F9] p-8">
+        <div class="max-w-[800px] mx-auto space-y-6">
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+                <h3 class="text-[16px] font-extrabold text-gray-900 mb-6 border-b border-gray-100 pb-4">Informasi Akun</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-[11px] text-gray-400 font-semibold mb-1">Nama Lengkap</p>
+                        <p id="secNama" class="text-[14px] font-bold text-gray-900">Memuat...</p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] text-gray-400 font-semibold mb-1">Email</p>
+                        <p id="secEmail" class="text-[14px] font-bold text-gray-900">Memuat...</p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] text-gray-400 font-semibold mb-1">Role / Jabatan</p>
+                        <p id="secRole" class="text-[14px] font-extrabold text-brand-navy">Memuat...</p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] text-gray-400 font-semibold mb-1">Status Login</p>
+                        <p class="text-[14px] font-bold text-green-600"><i class="fa-solid fa-circle-check mr-1"></i> Aktif</p>
+                    </div>
+                    <div class="sm:col-span-2 border-t border-gray-100 pt-4 mt-2">
+                        <p class="text-[11px] text-gray-400 font-semibold mb-1">Metode Autentikasi</p>
+                        <p class="text-[14px] font-bold text-gray-900">Firebase Authentication (Email/Password)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+                <h3 class="text-[16px] font-extrabold text-gray-900 mb-6 border-b border-gray-100 pb-4">Status Keamanan Sistem</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center text-[13px] font-medium text-gray-700">
+                        <i class="fa-solid fa-circle-check text-green-500 mr-3 text-[16px]"></i> Login Authentication Aktif
+                    </div>
+                    <div class="flex items-center text-[13px] font-medium text-gray-700">
+                        <i class="fa-solid fa-circle-check text-green-500 mr-3 text-[16px]"></i> Role Based Access Control (RBAC) Aktif
+                    </div>
+                    <div class="flex items-center text-[13px] font-medium text-gray-700">
+                        <i class="fa-solid fa-circle-check text-green-500 mr-3 text-[16px]"></i> Session Authentication Aktif
+                    </div>
+                    <div class="flex items-center text-[13px] font-medium text-gray-700">
+                        <i class="fa-solid fa-circle-check text-green-500 mr-3 text-[16px]"></i> Data tersimpan terenkripsi di Cloud Firestore
+                    </div>
+                    <div class="flex items-center text-[13px] font-medium text-gray-700">
+                        <i class="fa-solid fa-circle-check text-green-500 mr-3 text-[16px]"></i> Komunikasi aman menggunakan HTTPS
+                    </div>
+                    <div class="flex items-center text-[13px] font-medium text-gray-700">
+                        <i class="fa-solid fa-circle-check text-green-500 mr-3 text-[16px]"></i> Pemisahan Hak Akses berdasarkan Role
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8", authDomain: "modul-hr-c889c.firebaseapp.com", projectId: "modul-hr-c889c", storageBucket: "modul-hr-c889c.firebasestorage.app", messagingSenderId: "422365405521", appId: "1:422365405521:web:79e314f0c8b54161dc3370" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById('secEmail').innerText = user.email;
+                let role = localStorage.getItem('userRole') || 'Karyawan';
+                document.getElementById('secRole').innerText = role.toUpperCase();
+                
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const nama = docSnap.data().namaLengkap || docSnap.data().name || user.email.split('@')[0];
+                        document.getElementById('secNama').innerText = nama;
+                        if(docSnap.data().role) {
+                            document.getElementById('secRole').innerText = docSnap.data().role.toUpperCase();
+                        }
+                    } else {
+                        document.getElementById('secNama').innerText = user.email.split('@')[0];
+                    }
+                } catch(e) {
+                    console.error("Error fetching user data:", e);
+                    document.getElementById('secNama').innerText = user.email.split('@')[0];
+                }
+            } else {
+                window.location.replace('index.html');
+            }
+        });
+    </script>
+</body>
+</html>

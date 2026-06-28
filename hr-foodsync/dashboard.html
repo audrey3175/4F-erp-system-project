@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FoodSync HRMS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = { 
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }, 
+                    colors: { 
+                        brand: { navy: '#003B73', light: '#0055A5' }, 
+                        background: { main: '#F4F7F9' } 
+                    }, 
+                    boxShadow: { 
+                        'soft': '0 4px 20px rgba(0, 0, 0, 0.04)', 
+                        'fly': '0 10px 40px rgba(0, 0, 0, 0.10)' 
+                    } 
+                } 
+            } 
+        }
+    </script>
+    <style>
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 12px 35px rgba(0,0,0,0.09); }
+        .toast-enter { animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .toast-exit  { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastIn  { from { opacity:0; transform: translateX(110%); } to { opacity:1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity:1; transform: translateX(0); } to { opacity:0; transform: translateX(110%); } }
+    </style>
+
+    <script>
+        (function() {
+            const role = localStorage.getItem('userRole');
+            let css = '';
+            if (role === 'Karyawan') css = '#labelManajemen, #menuSupervisor, #menuHrd, #menuPayroll, #menuLaporan { display: none !important; }';
+            else if (role === 'Supervisor') css = '#menuHrd, #menuPayroll, #menuLaporan { display: none !important; }';
+            else if (role === 'HRD') css = '#menuSupervisor, #menuPayroll { display: none !important; }';
+            else if (role === 'Payroll') css = '#menuSupervisor, #menuHrd { display: none !important; }';
+            if (css) { const style = document.createElement('style'); style.innerHTML = css; document.head.appendChild(style); }
+        })();
+    </script>
+</head>
+<body class="bg-background-main font-sans text-gray-800 flex h-screen overflow-hidden">
+
+    <aside class="w-[240px] bg-white border-r border-gray-100 flex flex-col justify-between hidden md:flex shrink-0 z-20 m-4 rounded-3xl shadow-soft">
+        <div class="flex-1 overflow-y-auto overflow-x-hidden">
+            <div class="p-6 flex justify-center items-center pb-2">
+                <img src="logo.png" alt="Logo FoodSync" class="w-full max-w-[160px] object-contain" onerror="this.src='https://placehold.co/160x50/ffffff/003B73?text=FoodSync'">
+            </div>
+            
+            <nav class="px-4 mt-6 space-y-1">
+                <p class="text-[10px] font-black text-gray-400 mb-2 mt-2 px-2 tracking-widest uppercase">Menu Utama</p>
+                <a href="dashboard.html" class="w-full flex items-center px-4 py-3 bg-blue-50 text-brand-light font-bold rounded-2xl transition-all text-[13px] shadow-sm"><i class="fa-solid fa-border-all w-5 text-center mr-3"></i> Dashboard</a>
+                
+                <p class="text-[10px] font-black text-gray-400 mb-2 mt-5 px-2 tracking-widest uppercase">Self Service</p>
+                <a href="karyawan.html" class="w-full flex items-center px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-2xl font-bold transition-all text-[13px]"><i class="fa-solid fa-fingerprint w-5 text-center mr-3 text-gray-400"></i> Presensi</a>
+                <a href="karyawan_cuti.html" class="w-full flex items-center px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-2xl font-bold transition-all text-[13px]"><i class="fa-solid fa-calendar-minus w-5 text-center mr-3 text-gray-400"></i> Pengajuan Cuti</a>
+                <a href="karyawan_reimbursement.html" class="w-full flex items-center px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-2xl font-bold transition-all text-[13px]"><i class="fa-solid fa-money-bill-wave w-5 text-center mr-3 text-gray-400"></i> Reimbursement</a>
+
+                <p id="labelManajemen" class="text-[10px] font-black text-gray-400 mb-2 mt-5 px-2 tracking-widest uppercase">Manajemen</p>
+                <a href="supervisor.html" id="menuSupervisor" class="w-full flex items-center px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-2xl font-bold transition-all text-[13px]"><i class="fa-solid fa-user-shield w-5 text-center mr-3 text-gray-400"></i> Supervisor</a>
+                <a href="hrd.html" id="menuHrd" class="w-full flex items-center px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-2xl font-bold transition-all text-[13px]"><i class="fa-solid fa-users-gear w-5 text-center mr-3 text-gray-400"></i> HRD</a>
+                <a href="payroll.html" id="menuPayroll" class="w-full flex items-center px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-2xl font-bold transition-all text-[13px]"><i class="fa-solid fa-file-invoice-dollar w-5 text-center mr-3 text-gray-400"></i> Payroll</a>
+                <a href="laporan.html" id="menuLaporan" class="w-full flex items-center px-4 py-3 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-2xl font-bold transition-all text-[13px]"><i class="fa-solid fa-chart-pie w-5 text-center mr-3 text-gray-400"></i> Laporan</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        
+        <header class="h-[76px] bg-white flex items-center justify-between px-8 shrink-0 z-50 sticky top-0 relative border-b border-gray-100 shadow-sm">
+            <div class="hidden sm:flex items-center text-sm font-bold text-gray-400">
+                <i class="fa-solid fa-house mr-2"></i> / <span class="text-brand-navy ml-2">Dashboard Center</span>
+            </div>
+
+            <div class="flex items-center space-x-4 ml-auto">
+                
+                <div id="headerSuperAdminWidget" class="hidden items-center mr-2 pr-4 border-r border-gray-200 fade-in">
+                    <span class="text-[10px] font-black text-brand-navy mr-2 uppercase tracking-widest bg-blue-100 px-2 py-1 rounded hidden sm:inline-block">🕵️ Mode Simulasi:</span>
+                    <select id="headerRoleSwitcher" class="text-[13px] font-black bg-gray-50 text-brand-navy border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-light cursor-pointer shadow-sm hover:border-gray-300 transition-all appearance-none outline-none">
+                        <option value="SuperAdmin">🌟 Super Admin</option>
+                        <option value="Karyawan">👤 Karyawan</option>
+                        <option value="Supervisor">👔 Supervisor</option>
+                        <option value="HRD">📁 HRD</option>
+                        <option value="Payroll">💰 Payroll</option>
+                    </select>
+                </div>
+
+                <div class="relative">
+                    <button onclick="window.toggleDropdown('settingsDropdown')" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-[#003B73] transition-colors"><i class="fa-solid fa-gear text-xl"></i></button>
+                                        <div id="settingsDropdown" class="hidden absolute right-0 mt-3 w-[260px] bg-white rounded-3xl shadow-fly border border-gray-100 py-3 fade-in z-50">
+                        <h3 class="px-6 py-2 text-[14px] font-black text-gray-400 uppercase tracking-widest mb-1">Pengaturan</h3>
+                        <a href="profil.html" class="flex items-center px-6 py-3 hover:bg-gray-50 transition cursor-pointer"><i class="fa-regular fa-circle-user text-lg text-gray-400 w-8"></i><p class="text-[14px] font-bold text-gray-700">Profil Saya</p></a>
+                        <a href="keamanan.html" class="flex items-center px-6 py-3 hover:bg-gray-50 transition cursor-pointer"><i class="fa-solid fa-shield-halved text-lg text-gray-400 w-8"></i><p class="text-[14px] font-bold text-gray-700">Keamanan</p></a>
+                        <div class="my-2 border-t border-gray-50"></div>
+                        <div class="px-4 mt-2"><a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a></div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <button onclick="window.toggleDropdown('notifDropdown')" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-[#003B73] transition-colors relative">
+                        <i class="fa-regular fa-bell text-xl"></i>
+                        <span id="bellDot" class="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-[#F4F7F9] hidden"></span>
+                    </button>
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-[340px] bg-white rounded-2xl shadow-fly border border-gray-100 py-3 fade-in z-50 flex flex-col max-h-[500px]">
+                        <div class="px-5 py-2 flex justify-between items-center mb-1 shrink-0"><h3 class="text-[18px] font-extrabold text-gray-900">Notifikasi</h3></div>
+                        <div id="notifList" class="flex-1 overflow-y-auto overflow-x-hidden"><div class="p-5 text-center text-gray-400 text-[12px]">Belum ada notifikasi</div></div>
+                    </div>
+                </div>
+
+                <div class="flex items-center pl-2 ml-1">
+                    <div class="text-right hidden sm:block mr-3">
+                        <p id="userDisplayName" class="text-[14px] font-extrabold text-brand-navy leading-tight">Memuat...</p>
+                        <p id="userDisplayRole" class="text-[11px] text-brand-light font-bold uppercase tracking-wider">Akses Sistem</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-brand-light text-lg border border-blue-100 bg-blue-50 shadow-sm overflow-hidden font-black" id="userInitial">?</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-auto p-6 md:p-8">
+            <div class="max-w-[1400px] mx-auto">
+                <div id="dynamicDashboardContainer" class="fade-in space-y-6">
+                    <div class="flex flex-col justify-center items-center h-[50vh]">
+                        <div class="w-12 h-12 border-4 border-gray-200 border-t-brand-light rounded-full animate-spin mb-4"></div>
+                        <p class="text-gray-400 font-bold tracking-wide">Memuat dashboard Anda...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (localStorage.getItem('originalRole') === 'SuperAdmin') {
+                const widget = document.getElementById('headerSuperAdminWidget');
+                const switcher = document.getElementById('headerRoleSwitcher');
+                if(widget && switcher) {
+                    widget.classList.remove('hidden');
+                    widget.classList.add('flex');
+                    switcher.value = localStorage.getItem('userRole') || 'SuperAdmin';
+                    switcher.addEventListener('change', function(e) {
+                        localStorage.setItem('userRole', e.target.value);
+                        window.location.reload();
+                    });
+                }
+            }
+        });
+
+        window.toggleDropdown = function(id) {
+            const dropdown = document.getElementById(id);
+            if(id !== 'settingsDropdown') { const sd = document.getElementById('settingsDropdown'); if (sd) sd.classList.add('hidden'); }
+            if(id !== 'notifDropdown') { const nd = document.getElementById('notifDropdown'); if (nd) nd.classList.add('hidden'); }
+            if(dropdown) dropdown.classList.toggle('hidden');
+        }
+        document.addEventListener('click', function(event) {
+            const isClickInsideSettings = event.target.closest('#settingsDropdown') || event.target.closest('button[onclick="window.toggleDropdown(\'settingsDropdown\')"]');
+            const isClickInsideNotif = event.target.closest('#notifDropdown') || event.target.closest('button[onclick="window.toggleDropdown(\'notifDropdown\')"]');
+            if (!isClickInsideSettings) { const sd = document.getElementById('settingsDropdown'); if (sd) sd.classList.add('hidden'); }
+            if (!isClickInsideNotif) { const nd = document.getElementById('notifDropdown'); if (nd) nd.classList.add('hidden'); }
+        });
+
+        // ========================================
+        // TOAST NOTIFICATION SYSTEM
+        // ========================================
+        window.showToast = function(message, type) {
+            type = type || 'success';
+            const container = document.getElementById('toastContainer');
+            const id = 'toast-' + Date.now();
+            const cfg = {
+                success: { bg: '#16a34a', icon: 'fa-circle-check' },
+                error:   { bg: '#dc2626', icon: 'fa-circle-xmark' },
+                info:    { bg: '#003B73', icon: 'fa-circle-info' },
+                warning: { bg: '#d97706', icon: 'fa-triangle-exclamation' }
+            };
+            const c = cfg[type] || cfg.success;
+            const el = document.createElement('div');
+            el.id = id;
+            el.className = 'pointer-events-auto px-5 py-3.5 rounded-2xl shadow-fly flex items-center gap-3 min-w-[280px] max-w-[380px] toast-enter';
+            el.style.cssText = `background:${c.bg}; color:#fff;`;
+            el.innerHTML = `<i class="fa-solid ${c.icon} text-lg shrink-0"></i><span style="font-size:13px;font-weight:600;flex:1;">${message}</span><button onclick="document.getElementById('${id}').remove()" style="opacity:.8;hover:opacity:1;background:none;border:none;cursor:pointer;color:#fff;"><i class="fa-solid fa-xmark"></i></button>`;
+            container.appendChild(el);
+            setTimeout(function() {
+                el.classList.replace('toast-enter', 'toast-exit');
+                setTimeout(function() { if(el.parentNode) el.remove(); }, 320);
+            }, 4200);
+        };
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8", authDomain: "modul-hr-c889c.firebaseapp.com", projectId: "modul-hr-c889c", storageBucket: "modul-hr-c889c.firebasestorage.app", messagingSenderId: "422365405521", appId: "1:422365405521:web:79e314f0c8b54161dc3370" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let chartInstances = [];
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const currentRole = localStorage.getItem('userRole');
+                if (!currentRole) { window.location.replace("index.html"); return; }
+                
+                const rawName = user.email.split('@')[0];
+                const namaKapital = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+                
+                document.getElementById('userDisplayName').innerText = namaKapital;
+                document.getElementById('userDisplayRole').innerText = currentRole;
+                document.getElementById('userInitial').innerText = namaKapital.charAt(0);
+
+                await bangunDashboard(currentRole, namaKapital, user.email);
+            } else { window.location.replace("index.html"); }
+        });
+
+        window.prosesLogout = function() {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('originalRole');
+            signOut(auth).then(() => { window.location.replace("index.html"); });
+        };
+
+        // ========================================
+        // HELPER UTILITIES
+        // ========================================
+        function fRupiah(n) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(Number(n) || 0); }
+        
+        function fTanggal(ts) {
+            if (!ts) return '-';
+            const d = new Date(ts);
+            if (isNaN(d)) return '-';
+            const b = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+            return `${d.getDate()} ${b[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        function badgeStatus(s) {
+            const m = {
+                'DIPROSES':  'background:#fffbeb;color:#d97706;border:1px solid #fcd34d;',
+                'MENUNGGU':  'background:#fffbeb;color:#d97706;border:1px solid #fcd34d;',
+                'DISETUJUI': 'background:#f0fdf4;color:#16a34a;border:1px solid #86efac;',
+                'DITOLAK':   'background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;',
+            };
+            const label = { 'DIPROSES':'Menunggu','MENUNGGU':'Menunggu','DISETUJUI':'Disetujui','DITOLAK':'Ditolak' };
+            const style = m[s] || 'background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb;';
+            return `<span style="${style}padding:2px 10px;border-radius:8px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;">${label[s]||s}</span>`;
+        }
+
+        // ========================================
+        // DASHBOARD BUILDER
+        // ========================================
+        async function bangunDashboard(role, nama, email) {
+            const container = document.getElementById('dynamicDashboardContainer');
+            chartInstances.forEach(c => c.destroy());
+            chartInstances = [];
+
+            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const BLN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            const periode = `${BLN[now.getMonth()]} ${now.getFullYear()}`;
+
+            // ============================================================
+            // SUPER ADMIN
+            // ============================================================
+            if (role === 'SuperAdmin') {
+                let totalKaryawan = 0, hadirHariIni = 0, cutiPending = 0, reimbPending = 0;
+                let deptCounts = {};
+
+                try {
+                    const [sK, sA, sC, sR] = await Promise.all([
+                        getDocs(collection(db, "karyawan")),
+                        getDocs(query(collection(db, "absensi"), where("dateKey", "==", today))),
+                        getDocs(query(collection(db, "cuti"), where("status", "==", "DIPROSES"))),
+                        getDocs(query(collection(db, "reimbursement"), where("status", "==", "MENUNGGU")))
+                    ]);
+                    totalKaryawan = sK.size; hadirHariIni = sA.size;
+                    cutiPending = sC.size; reimbPending = sR.size;
+                    sK.forEach(d => { const dep = d.data().departemen || 'Lainnya'; deptCounts[dep] = (deptCounts[dep] || 0) + 1; });
+                } catch(e) { console.error(e); }
+
+                const hadir = hadirHariIni, belumHadir = Math.max(0, totalKaryawan - hadir);
+                const pctHadir = totalKaryawan > 0 ? Math.round((hadir / totalKaryawan) * 100) : 0;
+                const dptL = Object.keys(deptCounts), dptD = Object.values(deptCounts);
+
+                container.innerHTML = `
+                    <div>
+                        <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Selamat datang, ${nama}! 👋</h1>
+                        <p class="text-[13px] text-gray-400 font-medium mt-0.5">Ringkasan operasional FoodSync HRMS — ${periode}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-users text-blue-600 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#2563eb;background:#eff6ff;padding:3px 8px;border-radius:8px;">AKTIF</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${totalKaryawan}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Total Karyawan</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-user-shield text-green-500 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#16a34a;background:#f0fdf4;padding:3px 8px;border-radius:8px;">${pctHadir}%</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${hadirHariIni}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Hadir Hari Ini</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-calendar-clock text-amber-500 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#d97706;background:#fffbeb;padding:3px 8px;border-radius:8px;">PENDING</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${cutiPending}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Pengajuan Cuti</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-receipt text-purple-500 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#9333ea;background:#faf5ff;padding:3px 8px;border-radius:8px;">REVIEW</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${reimbPending}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Reimburse Pending</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                        <div class="lg:col-span-3 bg-white rounded-2xl border border-gray-100 p-6 shadow-soft">
+                            <div class="mb-5">
+                                <h3 class="text-[14px] font-black text-gray-800">Headcount per Departemen</h3>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Distribusi karyawan aktif seluruh divisi</p>
+                            </div>
+                            <div class="relative" style="height:220px;"><canvas id="chartHead"></canvas></div>
+                        </div>
+                        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 shadow-soft">
+                            <div class="mb-5">
+                                <h3 class="text-[14px] font-black text-gray-800">Kehadiran Hari Ini</h3>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Rasio hadir vs belum absen</p>
+                            </div>
+                            <div class="relative flex justify-center" style="height:185px;"><canvas id="chartHadir"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-soft">
+                        <h3 class="text-[14px] font-black text-gray-800 mb-4">Akses Cepat Admin</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <a href="hrd.html" class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition group cursor-pointer">
+                                <i class="fa-solid fa-users-gear text-gray-400 group-hover:text-brand-light text-lg w-5 text-center shrink-0"></i>
+                                <span class="text-[13px] font-bold text-gray-600 group-hover:text-brand-light">Data Karyawan</span>
+                            </a>
+                            <a href="supervisor.html" class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition group cursor-pointer">
+                                <i class="fa-solid fa-list-check text-gray-400 group-hover:text-brand-light text-lg w-5 text-center shrink-0"></i>
+                                <span class="text-[13px] font-bold text-gray-600 group-hover:text-brand-light">Approval Center</span>
+                            </a>
+                            <a href="payroll.html" class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition group cursor-pointer">
+                                <i class="fa-solid fa-file-invoice-dollar text-gray-400 group-hover:text-brand-light text-lg w-5 text-center shrink-0"></i>
+                                <span class="text-[13px] font-bold text-gray-600 group-hover:text-brand-light">Payroll &amp; Finance</span>
+                            </a>
+                            <a href="laporan.html" class="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition group cursor-pointer">
+                                <i class="fa-solid fa-chart-pie text-gray-400 group-hover:text-brand-light text-lg w-5 text-center shrink-0"></i>
+                                <span class="text-[13px] font-bold text-gray-600 group-hover:text-brand-light">Analytics &amp; Laporan</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    Chart.defaults.font.family = "'Inter', sans-serif";
+                    const c1 = document.getElementById('chartHead').getContext('2d');
+                    chartInstances.push(new Chart(c1, {
+                        type: 'bar',
+                        data: {
+                            labels: dptL.length ? dptL : ['Belum ada data'],
+                            datasets: [{ label: 'Karyawan', data: dptD.length ? dptD : [0], backgroundColor: ['#0055A5','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4'], borderRadius: 7, borderSkipped: false }]
+                        },
+                        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, grid:{ color:'#f1f5f9' }, ticks:{ stepSize:1 } }, x:{ grid:{ display:false } } } }
+                    }));
+                    const c2 = document.getElementById('chartHadir').getContext('2d');
+                    chartInstances.push(new Chart(c2, {
+                        type: 'doughnut',
+                        data: { labels: ['Hadir','Belum Absen'], datasets: [{ data:[hadir, belumHadir || 1], backgroundColor:['#0055A5','#e2e8f0'], borderWidth:0, hoverOffset:4 }] },
+                        options: { responsive:true, maintainAspectRatio:false, cutout:'68%', plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:8, padding:14, font:{size:11} } } } }
+                    }));
+                }, 100);
+            }
+
+            // ============================================================
+            // HRD
+            // ============================================================
+            else if (role === 'HRD') {
+                let totalKaryawan = 0, cutiPending = 0, reimbPending = 0, totalDept = 0;
+                let deptCounts = {};
+
+                try {
+                    const [sK, sC, sR] = await Promise.all([
+                        getDocs(collection(db, "karyawan")),
+                        getDocs(query(collection(db, "cuti"), where("status", "==", "DIPROSES"))),
+                        getDocs(query(collection(db, "reimbursement"), where("status", "==", "MENUNGGU")))
+                    ]);
+                    totalKaryawan = sK.size; cutiPending = sC.size; reimbPending = sR.size;
+                    sK.forEach(d => { const dep = d.data().departemen || 'Lainnya'; deptCounts[dep] = (deptCounts[dep] || 0) + 1; });
+                    totalDept = Object.keys(deptCounts).length;
+                } catch(e) { console.error(e); }
+
+                const dptL = Object.keys(deptCounts), dptD = Object.values(deptCounts);
+
+                container.innerHTML = `
+                    <div>
+                        <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Human Resource Dashboard</h1>
+                        <p class="text-[13px] text-gray-400 font-medium mt-0.5">Manajemen data karyawan dan administrasi SDM — ${periode}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-id-badge text-blue-600 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#2563eb;background:#eff6ff;padding:3px 8px;border-radius:8px;">AKTIF</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${totalKaryawan}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Total Karyawan</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-sitemap text-teal-500 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#0d9488;background:#f0fdfa;padding:3px 8px;border-radius:8px;">DIVISI</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${totalDept}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Departemen Aktif</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-calendar-xmark text-amber-500 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#d97706;background:#fffbeb;padding:3px 8px;border-radius:8px;">PROSES</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${cutiPending}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Cuti Diproses</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-file-circle-question text-orange-500 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#ea580c;background:#fff7ed;padding:3px 8px;border-radius:8px;">REVIEW</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${reimbPending}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Reimburse Diajukan</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 shadow-soft">
+                            <div class="mb-5">
+                                <h3 class="text-[14px] font-black text-gray-800">Headcount by Department</h3>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Jumlah karyawan per departemen</p>
+                            </div>
+                            <div class="relative" style="height:220px;"><canvas id="chartHrdBar"></canvas></div>
+                        </div>
+                        <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-soft">
+                            <div class="mb-5">
+                                <h3 class="text-[14px] font-black text-gray-800">Proporsi Departemen</h3>
+                                <p class="text-[11px] text-gray-400 mt-0.5">Persentase per divisi</p>
+                            </div>
+                            <div class="relative flex justify-center" style="height:185px;"><canvas id="chartHrdPie"></canvas></div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-soft" style="background:linear-gradient(135deg,#003B73,#0055A5);">
+                        <div>
+                            <p style="font-size:11px;font-weight:800;color:#93c5fd;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;">Manajemen Data</p>
+                            <p class="text-[18px] font-black">Kelola Master Data Karyawan</p>
+                            <p style="font-size:13px;color:#bfdbfe;margin-top:4px;">Tambah, edit, atau hapus data karyawan perusahaan.</p>
+                        </div>
+                        <a href="hrd.html" class="bg-white text-brand-navy px-6 py-3 rounded-xl font-black text-[13px] hover:bg-gray-100 transition shrink-0 shadow-md">
+                            <i class="fa-solid fa-arrow-right mr-2"></i> Buka HRD Data
+                        </a>
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    Chart.defaults.font.family = "'Inter', sans-serif";
+                    const cb = document.getElementById('chartHrdBar').getContext('2d');
+                    chartInstances.push(new Chart(cb, {
+                        type: 'bar',
+                        data: { labels: dptL.length ? dptL : ['Belum ada data'], datasets: [{ label:'Karyawan', data: dptD.length ? dptD : [0], backgroundColor:'#0055A5', hoverBackgroundColor:'#003B73', borderRadius:7, borderSkipped:false }] },
+                        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{beginAtZero:true,grid:{color:'#f1f5f9'},ticks:{stepSize:1}}, x:{grid:{display:false}} } }
+                    }));
+                    const cp = document.getElementById('chartHrdPie').getContext('2d');
+                    chartInstances.push(new Chart(cp, {
+                        type: 'doughnut',
+                        data: { labels: dptL.length ? dptL : ['Belum ada data'], datasets: [{ data: dptD.length ? dptD : [1], backgroundColor:['#0055A5','#10b981','#f59e0b','#8b5cf6','#ef4444'], borderWidth:0, hoverOffset:4 }] },
+                        options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:8, padding:10, font:{size:10} } } } }
+                    }));
+                }, 100);
+            }
+
+            // ============================================================
+            // KARYAWAN
+            // ============================================================
+            else if (role === 'Karyawan') {
+                let statusAbsen = null, cutiTerpakai = 0, sisaCuti = 12;
+                let lastReimb = null, allReimb = [];
+
+                try {
+                    const [sA, sC, sR] = await Promise.all([
+                        getDocs(query(collection(db, "absensi"), where("email", "==", email), where("dateKey", "==", today))),
+                        getDocs(query(collection(db, "cuti"), where("email", "==", email), where("status", "==", "DISETUJUI"))),
+                        getDocs(query(collection(db, "reimbursement"), where("email", "==", email)))
+                    ]);
+                    if (!sA.empty) statusAbsen = sA.docs[0].data();
+                    sC.forEach(d => { cutiTerpakai += Number(d.data().durasi) || 0; });
+                    sisaCuti = Math.max(0, 12 - cutiTerpakai);
+                    sR.forEach(d => allReimb.push(d.data()));
+                    allReimb.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    if (allReimb.length) lastReimb = allReimb[0];
+                } catch(e) { console.error(e); }
+
+                // Absensi card
+                let aIcon = 'fa-clock', aColor = '#d97706', aBg = '#fffbeb', aTitle = 'Belum Absen', aDesc = 'Anda belum melakukan Clock In hari ini.', aBtnLabel = '🕐 Clock In Sekarang', aBtnStyle = 'background:#003B73;color:#fff;';
+                if (statusAbsen && statusAbsen.in && !statusAbsen.out) {
+                    aIcon = 'fa-right-to-bracket'; aColor = '#16a34a'; aBg = '#f0fdf4';
+                    aTitle = `Clock In: ${statusAbsen.in} WIB`; aDesc = `Status: <strong>${statusAbsen.status}</strong> — Belum Clock Out`;
+                    aBtnLabel = '🚪 Clock Out Sekarang'; aBtnStyle = 'background:#dc2626;color:#fff;';
+                } else if (statusAbsen && statusAbsen.out) {
+                    aIcon = 'fa-circle-check'; aColor = '#0055A5'; aBg = '#eff6ff';
+                    aTitle = 'Hadir Penuh'; aDesc = `Masuk ${statusAbsen.in} — Keluar ${statusAbsen.out} WIB`;
+                    aBtnLabel = '✅ Lihat Riwayat'; aBtnStyle = 'background:#0055A5;color:#fff;';
+                }
+
+                const pctCuti = Math.round((sisaCuti / 12) * 100);
+                const reimCard = lastReimb
+                    ? `<div class="flex items-center justify-between"><div class="min-w-0 mr-3"><p class="text-[12px] text-gray-500 font-semibold truncate">${lastReimb.judul || lastReimb.kategori}</p><p class="text-[15px] font-black text-gray-900">${fRupiah(lastReimb.nominal)}</p></div>${badgeStatus(lastReimb.status)}</div>`
+                    : `<p class="text-[13px] text-gray-400 text-center py-3 font-medium">Belum ada pengajuan</p>`;
+
+                const listReimb = allReimb.slice(0, 4);
+                const actHTML = listReimb.length
+                    ? listReimb.map(r => `
+                        <div class="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0">
+                            <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background:#fff7ed;">
+                                <i class="fa-solid fa-receipt text-sm" style="color:#ea580c;"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[13px] font-bold text-gray-800 truncate">${r.judul || r.kategori}</p>
+                                <p class="text-[11px] text-gray-400">${fRupiah(r.nominal)} · ${fTanggal(r.createdAt)}</p>
+                            </div>
+                            ${badgeStatus(r.status)}
+                        </div>`).join('')
+                    : `<div class="text-center py-8"><i class="fa-regular fa-folder-open text-3xl text-gray-200 mb-2 block"></i><p class="text-[12px] text-gray-400">Belum ada riwayat klaim</p></div>`;
+
+                container.innerHTML = `
+                    <div>
+                        <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Halo, ${nama}! 👋</h1>
+                        <p class="text-[13px] text-gray-400 font-medium mt-0.5">Ringkasan aktivitas kerja Anda — ${periode}</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0" style="background:${aBg};">
+                                    <i class="fa-solid ${aIcon} text-lg" style="color:${aColor};"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Presensi Hari Ini</p>
+                                    <p class="text-[14px] font-black text-gray-900">${aTitle}</p>
+                                </div>
+                            </div>
+                            <p class="text-[12px] text-gray-400 font-medium mb-4">${aDesc}</p>
+                            <a href="karyawan.html" class="w-full block text-center py-2.5 rounded-xl text-[12px] font-extrabold hover:opacity-90 transition" style="${aBtnStyle}">${aBtnLabel}</a>
+                        </div>
+
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Sisa Cuti Tahunan</p>
+                            <div class="flex items-end justify-between mb-3">
+                                <p class="text-[42px] font-black text-brand-navy leading-none">${sisaCuti}</p>
+                                <p class="text-[13px] text-gray-400 font-bold mb-1">/ 12 Hari</p>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full mb-4" style="height:6px;">
+                                <div class="h-full rounded-full transition-all" style="width:${pctCuti}%;background:#003B73;"></div>
+                            </div>
+                            <a href="karyawan_cuti.html" class="w-full block text-center py-2.5 rounded-xl text-[12px] font-extrabold transition" style="background:#f0f9ff;color:#0055A5;border:1px solid #bae6fd;">📅 Ajukan Cuti</a>
+                        </div>
+
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Klaim Terakhir</p>
+                            <div class="mb-4">${reimCard}</div>
+                            <a href="karyawan_reimbursement.html" class="w-full block text-center py-2.5 rounded-xl text-[12px] font-extrabold transition" style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;">💸 Ajukan Klaim</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-soft">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-[14px] font-black text-gray-800">Riwayat Klaim Dana</h3>
+                            <a href="karyawan_reimbursement_riwayat.html" class="text-[12px] font-bold text-brand-light hover:underline">Lihat semua →</a>
+                        </div>
+                        ${actHTML}
+                    </div>
+                `;
+            }
+
+            // ============================================================
+            // SUPERVISOR
+            // ============================================================
+            else if (role === 'Supervisor') {
+                let cutiPending = 0, reimbPending = 0, totalDisetujui = 0, totalDitolak = 0;
+                let listCutiPending = [], listReimbPending = [];
+                let mapNama = {};
+
+                try {
+                    const [sU, sK, sCp, sRp, sCa, sCt, sRa, sRt] = await Promise.all([
+                        getDocs(collection(db, "users")),
+                        getDocs(collection(db, "karyawan")),
+                        getDocs(query(collection(db, "cuti"), where("status", "==", "DIPROSES"))),
+                        getDocs(query(collection(db, "reimbursement"), where("status", "==", "MENUNGGU"))),
+                        getDocs(query(collection(db, "cuti"), where("status", "==", "DISETUJUI"))),
+                        getDocs(query(collection(db, "cuti"), where("status", "==", "DITOLAK"))),
+                        getDocs(query(collection(db, "reimbursement"), where("status", "==", "DISETUJUI"))),
+                        getDocs(query(collection(db, "reimbursement"), where("status", "==", "DITOLAK")))
+                    ]);
+                    sU.forEach(d => { if(d.data().email) mapNama[d.data().email] = d.data().namaLengkap; });
+                    sK.forEach(d => { if(d.data().email) mapNama[d.data().email] = d.data().nama; });
+                    cutiPending = sCp.size; reimbPending = sRp.size;
+                    totalDisetujui = sCa.size + sRa.size; totalDitolak = sCt.size + sRt.size;
+                    sCp.forEach(d => listCutiPending.push({ id: d.id, ...d.data() }));
+                    sRp.forEach(d => listReimbPending.push({ id: d.id, ...d.data() }));
+                } catch(e) { console.error(e); }
+
+                const totalPending = cutiPending + reimbPending;
+
+                const mkCutiRow = (c) => {
+                    const n = mapNama[c.email] || c.email.split('@')[0];
+                    return `<div class="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black" style="background:#eff6ff;color:#0055A5;">${n.charAt(0).toUpperCase()}</div>
+                            <div><p class="text-[13px] font-bold text-gray-800">${n}</p><p class="text-[11px] text-gray-400">${c.jenis} · ${c.durasi} hari</p></div>
+                        </div>
+                        <span style="background:#fffbeb;color:#d97706;border:1px solid #fcd34d;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;text-transform:uppercase;">Pending</span>
+                    </div>`;
+                };
+                const mkReimbRow = (r) => {
+                    const n = mapNama[r.email] || r.email.split('@')[0];
+                    return `<div class="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black" style="background:#fff7ed;color:#ea580c;">${n.charAt(0).toUpperCase()}</div>
+                            <div><p class="text-[13px] font-bold text-gray-800">${n}</p><p class="text-[11px] text-gray-400">${r.kategori} · ${fRupiah(r.nominal)}</p></div>
+                        </div>
+                        <span style="background:#fffbeb;color:#d97706;border:1px solid #fcd34d;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;text-transform:uppercase;">Pending</span>
+                    </div>`;
+                };
+
+                const cutiPreview = listCutiPending.slice(0, 3);
+                const reimbPreview = listReimbPending.slice(0, 3);
+                const cutiHTML = cutiPreview.length
+                    ? cutiPreview.map(mkCutiRow).join('')
+                    : `<div class="py-6 text-center"><i class="fa-solid fa-circle-check text-3xl text-gray-200 block mb-2"></i><p class="text-[12px] text-gray-400">Tidak ada antrean cuti</p></div>`;
+                const reimbHTML = reimbPreview.length
+                    ? reimbPreview.map(mkReimbRow).join('')
+                    : `<div class="py-6 text-center"><i class="fa-solid fa-circle-check text-3xl text-gray-200 block mb-2"></i><p class="text-[12px] text-gray-400">Tidak ada antrean reimburse</p></div>`;
+
+                container.innerHTML = `
+                    <div>
+                        <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Supervisor Approval Center</h1>
+                        <p class="text-[13px] text-gray-400 font-medium mt-0.5">Kelola persetujuan tim Anda — ${periode}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-hourglass-half text-amber-500 text-lg"></i>
+                                </div>
+                                ${cutiPending > 0 ? `<span class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black" style="background:#ef4444;">${cutiPending}</span>` : `<span style="font-size:10px;font-weight:800;color:#16a34a;background:#f0fdf4;padding:3px 8px;border-radius:8px;">CLEAR</span>`}
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${cutiPending}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Pending Cuti</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-receipt text-orange-500 text-lg"></i>
+                                </div>
+                                ${reimbPending > 0 ? `<span class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black" style="background:#ef4444;">${reimbPending}</span>` : `<span style="font-size:10px;font-weight:800;color:#16a34a;background:#f0fdf4;padding:3px 8px;border-radius:8px;">CLEAR</span>`}
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${reimbPending}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Pending Reimburse</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-circle-check text-green-500 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#16a34a;background:#f0fdf4;padding:3px 8px;border-radius:8px;">ALL TIME</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${totalDisetujui}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Total Disetujui</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-circle-xmark text-red-400 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#ef4444;background:#fef2f2;padding:3px 8px;border-radius:8px;">ALL TIME</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${totalDitolak}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Total Ditolak</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-soft">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-[14px] font-black text-gray-800">Antrean Cuti <span class="ml-2 px-2 py-0.5 rounded-lg text-[11px] font-extrabold" style="background:#fffbeb;color:#d97706;">${cutiPending}</span></h3>
+                                <a href="supervisor.html" class="text-[12px] font-bold text-brand-light hover:underline">Proses semua →</a>
+                            </div>
+                            ${cutiHTML}
+                        </div>
+                        <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-soft">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-[14px] font-black text-gray-800">Antrean Reimburse <span class="ml-2 px-2 py-0.5 rounded-lg text-[11px] font-extrabold" style="background:#fff7ed;color:#ea580c;">${reimbPending}</span></h3>
+                                <a href="supervisor.html" class="text-[12px] font-bold text-brand-light hover:underline">Proses semua →</a>
+                            </div>
+                            ${reimbHTML}
+                        </div>
+                    </div>
+
+                    <div class="rounded-2xl p-6 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-soft" style="background:linear-gradient(135deg,#7c2d12,#ea580c);">
+                        <div>
+                            <p style="font-size:11px;font-weight:800;color:#fed7aa;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;">Action Required</p>
+                            <p class="text-[18px] font-black">${totalPending} Item Menunggu Persetujuan Anda</p>
+                            <p style="font-size:13px;color:#fde8d8;margin-top:4px;">Tinjau dan berikan keputusan di halaman Supervisor.</p>
+                        </div>
+                        <a href="supervisor.html" class="bg-white text-orange-700 px-6 py-3 rounded-xl font-black text-[13px] hover:bg-gray-100 transition shrink-0 shadow-md">
+                            <i class="fa-solid fa-list-check mr-2"></i> Buka Approval
+                        </a>
+                    </div>
+                `;
+            }
+
+            // ============================================================
+            // PAYROLL
+            // ============================================================
+            else if (role === 'Payroll') {
+                let totalKaryawan = 0, totalDisetujui = 0, totalDana = 0, reimbPending = 0;
+                let listDisetujui = [], mapNama = {};
+
+                try {
+                    const [sK, sRa, sRp] = await Promise.all([
+                        getDocs(collection(db, "karyawan")),
+                        getDocs(query(collection(db, "reimbursement"), where("status", "==", "DISETUJUI"))),
+                        getDocs(query(collection(db, "reimbursement"), where("status", "==", "MENUNGGU")))
+                    ]);
+                    sK.forEach(d => { totalKaryawan++; if(d.data().email) mapNama[d.data().email] = d.data().nama; });
+                    totalDisetujui = sRa.size; reimbPending = sRp.size;
+                    sRa.forEach(d => { totalDana += Number(d.data().nominal) || 0; listDisetujui.push(d.data()); });
+                    listDisetujui.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                } catch(e) { console.error(e); }
+
+                const previewList = listDisetujui.slice(0, 5);
+                const payTableHTML = previewList.length
+                    ? previewList.map(r => {
+                        const n = mapNama[r.email] || r.email.split('@')[0];
+                        return `<div class="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl flex items-center justify-center text-[11px] font-black" style="background:#f0fdf4;color:#16a34a;">${n.charAt(0).toUpperCase()}</div>
+                                <div><p class="text-[13px] font-bold text-gray-800">${n}</p><p class="text-[11px] text-gray-400">${r.kategori}</p></div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[13px] font-extrabold text-gray-900">${fRupiah(r.nominal)}</p>
+                                <span style="background:#f0fdf4;color:#16a34a;border:1px solid #86efac;padding:1px 6px;border-radius:6px;font-size:9px;font-weight:800;text-transform:uppercase;">Siap Cair</span>
+                            </div>
+                        </div>`;
+                    }).join('')
+                    : `<div class="py-6 text-center"><i class="fa-solid fa-inbox text-3xl text-gray-200 block mb-2"></i><p class="text-[12px] text-gray-400">Belum ada reimburse disetujui</p></div>`;
+
+                container.innerHTML = `
+                    <div>
+                        <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Payroll &amp; Finance Dashboard</h1>
+                        <p class="text-[13px] text-gray-400 font-medium mt-0.5">Rekap penggajian dan pengeluaran — ${periode}</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-users text-blue-600 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#2563eb;background:#eff6ff;padding:3px 8px;border-radius:8px;">AKTIF</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${totalKaryawan}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Total Karyawan</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-file-invoice-dollar text-emerald-500 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#10b981;background:#f0fdf4;padding:3px 8px;border-radius:8px;">APPROVED</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${totalDisetujui}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Reimburse Disetujui</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-wallet text-green-600 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#16a34a;background:#f0fdf4;padding:3px 8px;border-radius:8px;">DANA</span>
+                            </div>
+                            <p class="text-[16px] font-black text-gray-900 leading-none mb-1">${fRupiah(totalDana)}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Total Dana Reimburse</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-amber-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-hourglass-half text-amber-500 text-lg"></i>
+                                </div>
+                                <span style="font-size:10px;font-weight:800;color:#d97706;background:#fffbeb;padding:3px 8px;border-radius:8px;">REVIEW</span>
+                            </div>
+                            <p class="text-[32px] font-black text-gray-900 leading-none mb-1">${reimbPending}</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Menunggu Approval</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 p-6 shadow-soft">
+                            <div class="flex justify-between items-center mb-5">
+                                <h3 class="text-[14px] font-black text-gray-800">Reimburse Siap Dicairkan</h3>
+                                <a href="payroll.html" class="text-[12px] font-bold text-brand-light hover:underline">Lihat semua →</a>
+                            </div>
+                            ${payTableHTML}
+                        </div>
+
+                        <div class="bg-white rounded-2xl border border-gray-100 p-6 shadow-soft flex flex-col justify-between">
+                            <div>
+                                <p class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4">Ringkasan Periode</p>
+                                <div class="flex items-center gap-3 mb-5">
+                                    <div class="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style="background:#f0fdf4;">
+                                        <i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[15px] font-black text-gray-900">Dalam Proses</p>
+                                        <p class="text-[11px] text-gray-400">${periode}</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                                        <span class="text-[12px] text-gray-500 font-semibold">Total Karyawan</span>
+                                        <span class="text-[12px] font-black text-gray-900">${totalKaryawan} orang</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                                        <span class="text-[12px] text-gray-500 font-semibold">Berkas Cair</span>
+                                        <span class="text-[12px] font-black text-gray-900">${totalDisetujui} berkas</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                                        <span class="text-[12px] text-gray-500 font-semibold">Menunggu Review</span>
+                                        <span class="text-[12px] font-black text-amber-600">${reimbPending} berkas</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2">
+                                        <span class="text-[13px] text-gray-700 font-black">Total Dana</span>
+                                        <span class="text-[13px] font-black text-emerald-600">${fRupiah(totalDana)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="payroll.html" class="mt-5 w-full block text-center py-2.5 rounded-xl text-[12px] font-extrabold hover:opacity-90 transition" style="background:#003B73;color:#fff;">
+                                <i class="fa-solid fa-file-invoice-dollar mr-2"></i> Buka Payroll
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
+

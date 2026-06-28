@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Karyawan - FoodSync HRMS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { navy: '#003B73', light: '#0055A5' }, background: { main: '#F4F7F9' } }, boxShadow: { 'soft': '0 4px 20px rgba(0, 0, 0, 0.05)', 'fly': '0 10px 40px rgba(0, 0, 0, 0.1)' } } } }
+    </script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+
+    <!-- ANTI-FLICKER RBAC SCRIPT -->
+    <script>
+            (function () {
+                const role = localStorage.getItem('userRole');
+                let css = '';
+                if (role === 'Karyawan') css = '#labelManajemen, #menuSupervisor, #menuHrd, #menuPayroll, #menuLaporan { display: none !important; }';
+                else if (role === 'Supervisor') css = '#menuHrd, #menuPayroll, #menuLaporan { display: none !important; }';
+                else if (role === 'HRD') css = '#menuSupervisor, #menuPayroll { display: none !important; }';
+                else if (role === 'Payroll') css = '#menuSupervisor, #menuHrd { display: none !important; }';
+                if (css) { const style = document.createElement('style'); style.innerHTML = css; document.head.appendChild(style); }
+            })();
+    </script>
+</head>
+
+<body class="bg-background-main font-sans text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside
+        class="w-[240px] bg-white border-r border-gray-200 flex flex-col justify-between hidden md:flex shrink-0 z-20 m-4 rounded-xl shadow-sm">
+        <div class="flex-1 overflow-y-auto overflow-x-hidden">
+            <div class="p-6 flex justify-center items-center pb-2">
+                <img src="logo.png" alt="Logo FoodSync" class="w-full max-w-[180px] px-2 object-contain"
+                    onerror="this.src='https://placehold.co/180x50/ffffff/003B73?text=FoodSync'">
+            </div>
+            <nav class="px-4 mt-6 space-y-1">
+                <p class="text-[11px] font-semibold text-gray-800 mb-2 mt-2 px-2 tracking-wide uppercase">MENU UTAMA</p>
+                <a href="dashboard.html"
+                    class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i
+                        class="fa-solid fa-border-all w-5 text-center mr-3 text-gray-400"></i> Dashboard</a>
+
+                <p class="text-[11px] font-semibold text-gray-800 mb-2 mt-5 px-2 tracking-wide uppercase">SELF SERVICE
+                </p>
+                <a href="karyawan.html"
+                    class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i
+                        class="fa-solid fa-fingerprint w-5 text-center mr-3 text-gray-400"></i> Presensi</a>
+                <a href="karyawan_cuti.html"
+                    class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i
+                        class="fa-solid fa-calendar-minus w-5 text-center mr-3 text-gray-400"></i> Pengajuan Cuti</a>
+                <a href="karyawan_reimbursement.html"
+                    class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i
+                        class="fa-solid fa-money-bill-wave w-5 text-center mr-3 text-gray-400"></i> Reimbursement</a>
+
+                <p id="labelManajemen"
+                    class="text-[11px] font-semibold text-gray-800 mb-2 mt-5 px-2 tracking-wide uppercase">MANAJEMEN</p>
+                <a href="supervisor.html" id="menuSupervisor"
+                    class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i
+                        class="fa-solid fa-user-shield w-5 text-center mr-3 text-gray-400"></i> Supervisor</a>
+                <a href="hrd.html" id="menuHrd"
+                    class="w-full flex items-center px-4 py-2.5 bg-[#E5F0FA] text-brand-light font-bold rounded-xl transition-all text-[13px]"><i
+                        class="fa-regular fa-users-gear w-5 text-center mr-3 text-brand-light"></i> HRD</a>
+                <a href="payroll.html" id="menuPayroll"
+                    class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i
+                        class="fa-solid fa-file-invoice-dollar w-5 text-center mr-3 text-gray-400"></i> Payroll</a>
+                <a href="laporan.html" id="menuLaporan"
+                    class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i
+                        class="fa-solid fa-chart-pie w-5 text-center mr-3 text-gray-400"></i> Laporan</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- HEADER -->
+        <header
+            class="h-[64px] bg-[#F4F7F9] flex items-center justify-end px-8 shrink-0 z-50 sticky top-0 mt-2 relative">
+            <div class="flex items-center space-x-2 ml-auto">
+                <div class="relative">
+                    <button onclick="window.toggleDropdown('settingsDropdown')"
+                        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-brand-navy transition-colors"><i
+                            class="fa-solid fa-gear text-xl"></i></button>
+                    <div id="settingsDropdown"
+                        class="hidden absolute right-0 mt-3 w-[260px] bg-white rounded-3xl shadow-fly border border-gray-100 py-3 fade-in z-50">
+                        <h3 class="px-6 py-2 text-[14px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                            Pengaturan</h3>
+                        <a href="profil.html"
+                            class="flex items-center px-6 py-3 hover:bg-gray-50 transition cursor-pointer"><i
+                                class="fa-regular fa-circle-user text-lg text-gray-400 w-8"></i>
+                            <p class="text-[14px] font-bold text-gray-700">Profil Saya</p>
+                        </a>
+                        <a href="keamanan.html"
+                            class="flex items-center px-6 py-3 hover:bg-gray-50 transition cursor-pointer"><i
+                                class="fa-solid fa-shield-halved text-lg text-gray-400 w-8"></i>
+                            <p class="text-[14px] font-bold text-gray-700">Keamanan</p>
+                        </a>
+                        <div class="my-2 border-t border-gray-50"></div>
+                        <div class="px-4 mt-2"><a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a></div>
+                    </div>
+                </div>
+                <div class="flex items-center pl-4 ml-2">
+                    <div class="text-right hidden sm:block mr-3">
+                        <p id="userDisplayName" class="text-[14px] font-bold text-gray-900 leading-tight">Memuat...</p>
+                        <p class="text-[11px] text-gray-500 font-semibold">Human Resources</p>
+                    </div>
+                    <div
+                        class="w-10 h-10 rounded-full flex items-center justify-center text-gray-800 text-2xl border-[2.5px] border-gray-800 bg-blue-50 overflow-hidden">
+                        <i class="fa-regular fa-user"></i></div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-auto bg-[#F4F7F9]">
+            <div class="px-8 pb-8 max-w-[1000px] mx-auto space-y-6">
+                <div class="page-section block fade-in">
+
+                    <div class="mb-4 mt-6">
+                        <button onclick="window.location.href='hrd.html'"
+                            class="text-[13px] font-bold text-brand-light hover:underline transition flex items-center uppercase tracking-wide">
+                            <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Daftar Karyawan
+                        </button>
+                    </div>
+
+                    <div class="mb-6">
+                        <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Tambah Karyawan Baru</h1>
+                        <p class="text-[13px] text-gray-500 font-medium mt-0.5">Lengkapi formulir di bawah ini untuk
+                            mendaftarkan Master Data Karyawan ke sistem.</p>
+                    </div>
+
+                    <div class="bg-white rounded-3xl shadow-soft border border-gray-200 p-8">
+                        <form id="formTambahKaryawan" class="space-y-6">
+
+                            <h3 class="text-[15px] font-extrabold text-gray-900 border-b border-gray-100 pb-2 mb-4"><i
+                                    class="fa-regular fa-id-card text-brand-light mr-2"></i> Informasi Pribadi & Akun
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="text-[12px] font-bold text-gray-700 block mb-2">Nama Lengkap
+                                        Asli</label>
+                                    <input type="text" id="inpNama"
+                                        class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium"
+                                        placeholder="Contoh: Budi Kusuma" required>
+                                </div>
+                                <div>
+                                    <label class="text-[12px] font-bold text-gray-700 block mb-2">Nomor Induk Karyawan
+                                        (NIK)</label>
+                                    <input type="text" id="inpNik"
+                                        class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium"
+                                        placeholder="Contoh: 20260012" required>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="text-[12px] font-bold text-gray-700 block mb-2">Email Perusahaan
+                                        (Penting!)</label>
+                                    <input type="email" id="inpEmail"
+                                        class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium bg-blue-50/50"
+                                        placeholder="budi@foodsync.com (Harus sama dengan email yang didaftarkan di halaman Login)"
+                                        required>
+                                    <p class="text-[10px] text-red-500 mt-1 font-semibold">*Email ini akan menjadi kunci
+                                        utama sistem untuk mencocokkan data absensi & cuti karyawan.</p>
+                                </div>
+                            </div>
+
+                            <h3
+                                class="text-[15px] font-extrabold text-gray-900 border-b border-gray-100 pb-2 mb-4 pt-4">
+                                <i class="fa-solid fa-briefcase text-brand-light mr-2"></i> Jabatan & Departemen</h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="text-[12px] font-bold text-gray-700 block mb-2">Departemen</label>
+                                    <div class="relative">
+                                        <select id="inpDept"
+                                            class="w-full border border-gray-300 rounded-xl p-3 text-[14px] appearance-none focus:outline-none focus:ring-2 focus:ring-brand-light cursor-pointer font-medium"
+                                            required>
+                                            <option value="" disabled selected hidden>Pilih Departemen...</option>
+                                            <option value="Headquarter">Headquarter Office</option>
+                                            <option value="Production">Kitchen & Production</option>
+                                            <option value="Logistic">Logistic & Delivery</option>
+                                        </select>
+                                        <i
+                                            class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-[12px] pointer-events-none"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="text-[12px] font-bold text-gray-700 block mb-2">Posisi /
+                                        Jabatan</label>
+                                    <input type="text" id="inpJabatan"
+                                        class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium"
+                                        placeholder="Contoh: Staff Gudang" required>
+                                </div>
+                                <div>
+                                    <label class="text-[12px] font-bold text-gray-700 block mb-2">Tanggal
+                                        Bergabung</label>
+                                    <input type="date" id="inpTglGabung"
+                                        class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium"
+                                        required>
+                                </div>
+                                <div>
+                                    <label class="text-[12px] font-bold text-gray-700 block mb-2">Gaji Pokok (Rp) -
+                                        Opsional</label>
+                                    <input type="number" id="inpGaji"
+                                        class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium"
+                                        placeholder="0">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end pt-6 border-t border-gray-100">
+                                <button type="submit" id="btnSimpan"
+                                    class="bg-[#15803d] text-white px-8 py-3.5 rounded-xl text-[14px] font-bold hover:bg-green-800 transition shadow-md flex items-center">
+                                    <i class="fa-solid fa-save mr-2"></i> Simpan Data Karyawan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- WIDGET VIEW AS ROLE (Khusus Super Admin) -->
+    <script>
+        (function () {
+            if (localStorage.getItem('originalRole') === 'SuperAdmin') {
+                const currentSimRole = localStorage.getItem('userRole');
+                const widgetHTML = `
+                    <div id="superAdminWidget" class="fade-in" style="position:fixed; bottom:20px; right:20px; background:linear-gradient(135deg, #003B73, #0055A5); color:white; padding:16px; border-radius:16px; z-index:99999; box-shadow:0 15px 35px rgba(0,0,0,0.3); border:2px solid #60A5FA; width:220px; font-family:Inter, sans-serif;">
+                        <p style="font-size:11px; font-weight:800; margin-bottom:6px; color:#93C5FD; letter-spacing:1px; text-transform:uppercase;">🕵️ SUPER ADMIN MODE</p>
+                        <p style="font-size:12px; margin-bottom:12px; font-weight:500;">Simulasi Layar: <strong style="color:#FCD34D;">${currentSimRole}</strong></p>
+                        <select id="roleSwitcher" style="width:100%; padding:8px; border-radius:8px; color:#1F2937; font-size:13px; font-weight:700; cursor:pointer; border:none; outline:none;">
+                            <option value="SuperAdmin" ${currentSimRole === 'SuperAdmin' ? 'selected' : ''}>🌟 Super Admin</option>
+                            <option value="Karyawan" ${currentSimRole === 'Karyawan' ? 'selected' : ''}>👤 Karyawan</option>
+                            <option value="Supervisor" ${currentSimRole === 'Supervisor' ? 'selected' : ''}>👔 Supervisor</option>
+                            <option value="HRD" ${currentSimRole === 'HRD' ? 'selected' : ''}>📁 HRD</option>
+                            <option value="Payroll" ${currentSimRole === 'Payroll' ? 'selected' : ''}>💰 Payroll</option>
+                        </select>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', widgetHTML);
+                document.getElementById('roleSwitcher').addEventListener('change', function (e) {
+                    localStorage.setItem('userRole', e.target.value);
+                    if (e.target.value === 'Karyawan' || e.target.value === 'Supervisor') window.location.href = 'dashboard.html';
+                    else window.location.reload();
+                });
+            }
+        })();
+    </script>
+
+    <script>
+        window.toggleDropdown = function (id) {
+            const dropdown = document.getElementById(id);
+            if (id !== 'settingsDropdown') document.getElementById('settingsDropdown').classList.add('hidden');
+            if (id !== 'notifDropdown') document.getElementById('notifDropdown').classList.add('hidden');
+            dropdown.classList.toggle('hidden');
+        }
+    </script>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8", authDomain: "modul-hr-c889c.firebaseapp.com", projectId: "modul-hr-c889c", storageBucket: "modul-hr-c889c.firebasestorage.app", messagingSenderId: "422365405521", appId: "1:422365405521:web:79e314f0c8b54161dc3370" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const currentRole = localStorage.getItem('userRole');
+                if (!currentRole) { window.location.replace("index.html"); return; }
+                document.getElementById('userDisplayName').innerText = user.email.split('@')[0].toUpperCase();
+            } else { window.location.replace("index.html"); }
+        });
+
+        window.prosesLogout = function () {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('originalRole');
+            signOut(auth).then(() => { window.location.replace("index.html"); });
+        };
+
+        // FUNGSI SIMPAN KE FIRESTORE
+        document.getElementById('formTambahKaryawan').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSimpan');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menyimpan...';
+
+            const payload = {
+                nama: document.getElementById('inpNama').value,
+                nik: document.getElementById('inpNik').value,
+                email: document.getElementById('inpEmail').value,
+                departemen: document.getElementById('inpDept').value,
+                jabatan: document.getElementById('inpJabatan').value,
+                tglGabung: document.getElementById('inpTglGabung').value,
+                </div >
+                <div class="flex items-center pl-4 ml-2">
+                    <div class="text-right hidden sm:block mr-3">
+                        <p id="userDisplayName" class="text-[14px] font-bold text-gray-900 leading-tight">Memuat...</p>
+                        <p class="text-[11px] text-gray-500 font-semibold">Human Resources</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-gray-800 text-2xl border-[2.5px] border-gray-800 bg-blue-50 overflow-hidden"><i class="fa-regular fa-user"></i></div>
+                </div>
+            </div >
+        </header >
+
+                <div class="flex-1 overflow-auto bg-[#F4F7F9]">
+                    <div class="px-8 pb-8 max-w-[1000px] mx-auto space-y-6">
+                        <div class="page-section block fade-in">
+
+                            <div class="mb-4 mt-6">
+                                <button onclick="window.location.href='hrd.html'" class="text-[13px] font-bold text-brand-light hover:underline transition flex items-center uppercase tracking-wide">
+                                    <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Daftar Karyawan
+                                </button>
+                            </div>
+
+                            <div class="mb-6">
+                                <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Tambah Karyawan Baru</h1>
+                                <p class="text-[13px] text-gray-500 font-medium mt-0.5">Lengkapi formulir di bawah ini untuk mendaftarkan Master Data Karyawan ke sistem.</p>
+                            </div>
+
+                            <div class="bg-white rounded-3xl shadow-soft border border-gray-200 p-8">
+                                <form id="formTambahKaryawan" class="space-y-6">
+
+                                    <h3 class="text-[15px] font-extrabold text-gray-900 border-b border-gray-100 pb-2 mb-4"><i class="fa-regular fa-id-card text-brand-light mr-2"></i> Informasi Pribadi & Akun</h3>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="text-[12px] font-bold text-gray-700 block mb-2">Nama Lengkap Asli</label>
+                                            <input type="text" id="inpNama" class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium" placeholder="Contoh: Budi Kusuma" required>
+                                        </div>
+                                        <div>
+                                            <label class="text-[12px] font-bold text-gray-700 block mb-2">Nomor Induk Karyawan (NIK)</label>
+                                            <input type="text" id="inpNik" class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium" placeholder="Contoh: 20260012" required>
+                                        </div>
+                                        <div class="md:col-span-2">
+                                            <label class="text-[12px] font-bold text-gray-700 block mb-2">Email Perusahaan (Penting!)</label>
+                                            <input type="email" id="inpEmail" class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium bg-blue-50/50" placeholder="budi@foodsync.com (Harus sama dengan email yang didaftarkan di halaman Login)" required>
+                                                <p class="text-[10px] text-red-500 mt-1 font-semibold">*Email ini akan menjadi kunci utama sistem untuk mencocokkan data absensi & cuti karyawan.</p>
+                                        </div>
+                                    </div>
+
+                                    <h3 class="text-[15px] font-extrabold text-gray-900 border-b border-gray-100 pb-2 mb-4 pt-4"><i class="fa-solid fa-briefcase text-brand-light mr-2"></i> Jabatan & Departemen</h3>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="text-[12px] font-bold text-gray-700 block mb-2">Departemen</label>
+                                            <div class="relative">
+                                                <select id="inpDept" class="w-full border border-gray-300 rounded-xl p-3 text-[14px] appearance-none focus:outline-none focus:ring-2 focus:ring-brand-light cursor-pointer font-medium" required>
+                                                    <option value="" disabled selected hidden>Pilih Departemen...</option>
+                                                    <option value="Headquarter">Headquarter Office</option>
+                                                    <option value="Production">Kitchen & Production</option>
+                                                    <option value="Logistic">Logistic & Delivery</option>
+                                                </select>
+                                                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-[12px] pointer-events-none"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="text-[12px] font-bold text-gray-700 block mb-2">Posisi / Jabatan</label>
+                                            <input type="text" id="inpJabatan" class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium" placeholder="Contoh: Staff Gudang" required>
+                                        </div>
+                                        <div>
+                                            <label class="text-[12px] font-bold text-gray-700 block mb-2">Tanggal Bergabung</label>
+                                            <input type="date" id="inpTglGabung" class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium" required>
+                                        </div>
+                                        <div>
+                                            <label class="text-[12px] font-bold text-gray-700 block mb-2">Gaji Pokok (Rp) - Opsional</label>
+                                            <input type="number" id="inpGaji" class="w-full border border-gray-300 rounded-xl p-3 text-[14px] focus:outline-none focus:ring-2 focus:ring-brand-light font-medium" placeholder="0">
+                                        </div>
+                                    </div>
+
+                                    <div class="flex justify-end pt-6 border-t border-gray-100">
+                                        <button type="submit" id="btnSimpan" class="bg-[#15803d] text-white px-8 py-3.5 rounded-xl text-[14px] font-bold hover:bg-green-800 transition shadow-md flex items-center">
+                                            <i class="fa-solid fa-save mr-2"></i> Simpan Data Karyawan
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+    </main >
+
+                <!-- WIDGET VIEW AS ROLE (Khusus Super Admin) -->
+                <script>
+                    (function() {
+            if (localStorage.getItem('originalRole') === 'SuperAdmin') {
+                const currentSimRole = localStorage.getItem('userRole');
+                    const widgetHTML = `
+                    <div id="superAdminWidget" class="fade-in" style="position:fixed; bottom:20px; right:20px; background:linear-gradient(135deg, #003B73, #0055A5); color:white; padding:16px; border-radius:16px; z-index:99999; box-shadow:0 15px 35px rgba(0,0,0,0.3); border:2px solid #60A5FA; width:220px; font-family:Inter, sans-serif;">
+                        <p style="font-size:11px; font-weight:800; margin-bottom:6px; color:#93C5FD; letter-spacing:1px; text-transform:uppercase;">🕵️ SUPER ADMIN MODE</p>
+                        <p style="font-size:12px; margin-bottom:12px; font-weight:500;">Simulasi Layar: <strong style="color:#FCD34D;">${currentSimRole}</strong></p>
+                        <select id="roleSwitcher" style="width:100%; padding:8px; border-radius:8px; color:#1F2937; font-size:13px; font-weight:700; cursor:pointer; border:none; outline:none;">
+                            <option value="SuperAdmin" ${currentSimRole === 'SuperAdmin' ? 'selected' : ''}>🌟 Super Admin</option>
+                            <option value="Karyawan" ${currentSimRole === 'Karyawan' ? 'selected' : ''}>👤 Karyawan</option>
+                            <option value="Supervisor" ${currentSimRole === 'Supervisor' ? 'selected' : ''}>👔 Supervisor</option>
+                            <option value="HRD" ${currentSimRole === 'HRD' ? 'selected' : ''}>📁 HRD</option>
+                            <option value="Payroll" ${currentSimRole === 'Payroll' ? 'selected' : ''}>💰 Payroll</option>
+                        </select>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', widgetHTML);
+                document.getElementById('roleSwitcher').addEventListener('change', function(e) {
+                    localStorage.setItem('userRole', e.target.value);
+                    if(e.target.value === 'Karyawan' || e.target.value === 'Supervisor') window.location.href = 'dashboard.html';
+                    else window.location.reload();
+                });
+            }
+        })();
+    </script>
+
+    <script>
+            window.toggleDropdown = function(id) {
+            const dropdown = document.getElementById(id);
+            if (!dropdown) return;
+            if(id !== 'settingsDropdown') {
+                const s = document.getElementById('settingsDropdown');
+            if(s) s.classList.add('hidden');
+            }
+            if(id !== 'notifDropdown') {
+                const n = document.getElementById('notifDropdown');
+            if(n) n.classList.add('hidden');
+            }
+            dropdown.classList.toggle('hidden');
+        }
+    </script>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+            import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+            import {getAuth, onAuthStateChanged, signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+            import {getFirestore, collection, addDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+            const firebaseConfig = {apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8", authDomain: "modul-hr-c889c.firebaseapp.com", projectId: "modul-hr-c889c", storageBucket: "modul-hr-c889c.firebasestorage.app", messagingSenderId: "422365405521", appId: "1:422365405521:web:79e314f0c8b54161dc3370" };
+            const app = initializeApp(firebaseConfig);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const currentRole = localStorage.getItem('userRole');
+            if(!currentRole) {window.location.replace("index.html"); return; }
+            const el = document.getElementById('userDisplayName');
+            if(el) el.innerText = user.email.split('@')[0].toUpperCase();
+            } else {window.location.replace("index.html"); }
+        });
+
+            window.prosesLogout = function() {
+                localStorage.removeItem('userRole');
+            localStorage.removeItem('originalRole');
+            signOut(auth).then(() => {window.location.replace("index.html"); });
+        };
+
+        // FUNGSI SIMPAN KE FIRESTORE
+        document.getElementById('formTambahKaryawan').addEventListener('submit', async (e) => {
+                e.preventDefault();
+            const btn = document.getElementById('btnSimpan');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menyimpan...';
+
+            const payload = {
+                nama: document.getElementById('inpNama').value,
+            nik: document.getElementById('inpNik').value,
+            email: document.getElementById('inpEmail').value,
+            departemen: document.getElementById('inpDept').value,
+            jabatan: document.getElementById('inpJabatan').value,
+            tglGabung: document.getElementById('inpTglGabung').value,
+            gajiPokok: Number(document.getElementById('inpGaji').value) || 0,
+            createdAt: new Date().toISOString()
+            };
+
+            try {
+                await addDoc(collection(db, "karyawan"), payload);
+            window.showToast("Berhasil! Master Data Karyawan telah ditambahkan ke database.", "success");
+                setTimeout(() => {window.location.href = "hrd.html"; }, 1500);
+            } catch (error) {
+                window.showToast("Gagal menyimpan data: " + error.message, "error");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-save mr-2"></i> Simpan Data Karyawan';
+            }
+        });
+    </script>
+</body>
+
+</html>
+

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk - FoodSync HRMS</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { navy: '#003B73', light: '#0055A5' },
+                        background: { main: '#F4F7F9' }
+                    },
+                    boxShadow: { 
+                        'fly': '0 20px 40px rgba(0, 0, 0, 0.15)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-[#F4F7F9] font-sans text-gray-800 flex items-center justify-center min-h-screen relative py-10 px-4 overflow-y-auto">
+
+    <div class="fixed inset-0 z-0 bg-cover bg-center" style="background-image: url('Group 9.png');"></div>
+    <div class="fixed inset-0 z-0 bg-black/30"></div>
+
+    <div class="w-full max-w-[420px] bg-white rounded-3xl shadow-fly p-8 z-10 relative fade-in">
+        
+        <div class="flex justify-center mb-6">
+            <img src="logo.png" alt="FoodSync Logo" class="h-16 max-w-[220px] object-contain" onerror="this.src='https://placehold.co/220x60/ffffff/003B73?text=FoodSync+HRMS'">
+        </div>
+
+        <div id="loginContainer">
+            <div class="text-center mb-8">
+                <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Masuk Aplikasi HRMS</h1>
+                <p class="text-[12px] text-gray-500 font-medium mt-1">Silakan gunakan email dan kata sandi Anda.</p>
+            </div>
+
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-envelope absolute left-4 text-gray-400 text-[13px]"></i>
+                        <input type="email" id="loginEmail" placeholder="email@foodsync.com" class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0055A5] transition" required>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-lock absolute left-4 text-gray-400 text-[13px]"></i>
+                        <input type="password" id="loginPassword" placeholder="••••••••••••" class="w-full pl-11 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0055A5] transition" required>
+                        <button type="button" onclick="togglePassword('loginPassword', 'eyeLogin')" class="absolute right-4 text-gray-400 hover:text-brand-navy focus:outline-none">
+                            <i class="fa-solid fa-eye text-[13px]" id="eyeLogin"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-user-shield absolute left-4 text-gray-400 text-[13px]"></i>
+                        <select id="loginRole" class="w-full pl-11 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0055A5] transition appearance-none cursor-pointer font-semibold text-gray-700" required>
+                            <option value="" disabled selected hidden>Masuk Sebagai (Hak Akses)...</option>
+                            <option value="Karyawan">Karyawan</option>
+                            <option value="Supervisor">Supervisor</option>
+                            <option value="HRD">Admin HRD</option>
+                            <option value="Payroll">Admin Finance / Payroll</option>
+                            <option value="SuperAdmin">Super Admin (Eksekutif)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 text-gray-400 text-[12px] pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-1">
+                    <a href="#" class="text-[11px] text-brand-light font-bold hover:underline">Lupa password?</a>
+                </div>
+
+                <button type="submit" id="btnLogin" class="w-full bg-[#15803d] text-white py-3.5 rounded-xl font-bold text-[14px] hover:bg-green-800 transition shadow-md flex items-center justify-center mt-2">
+                    <i class="fa-solid fa-right-to-bracket mr-2"></i> Login Aplikasi
+                </button>
+
+                <div class="flex justify-between items-center text-[11px] pt-5 border-t border-gray-100">
+                    <span class="text-gray-500 font-medium">Belum memiliki akun?</span>
+                    <button type="button" onclick="switchView('register')" class="text-brand-light font-bold hover:underline">Daftar Sekarang</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="registerContainer" class="hidden fade-in">
+            <div class="text-center mb-6">
+                <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Daftar Akun Baru</h1>
+                <p class="text-[12px] text-gray-500 font-medium mt-1">Buat akun untuk simulasi presentasi dosen.</p>
+            </div>
+
+            <form id="registerForm" class="space-y-4">
+                <div>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-user absolute left-4 text-gray-400 text-[13px]"></i>
+                        <input type="text" id="regName" placeholder="Nama Lengkap" class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0055A5] transition" required>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-envelope absolute left-4 text-gray-400 text-[13px]"></i>
+                        <input type="email" id="regEmail" placeholder="Email Anda" class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0055A5] transition" required>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-user-tag absolute left-4 text-gray-400 text-[13px]"></i>
+                        <select id="regRole" class="w-full pl-11 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0055A5] transition appearance-none cursor-pointer font-semibold text-gray-700" required>
+                            <option value="" disabled selected hidden>Daftar Sebagai...</option>
+                            <option value="Karyawan">Karyawan</option>
+                            <option value="Supervisor">Supervisor</option>
+                            <option value="HRD">Admin HRD</option>
+                            <option value="Payroll">Admin Finance / Payroll</option>
+                            <option value="SuperAdmin">Super Admin (Eksekutif)</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 text-gray-400 text-[12px] pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="relative flex items-center">
+                        <i class="fa-solid fa-lock absolute left-4 text-gray-400 text-[13px]"></i>
+                        <input type="password" id="regPassword" placeholder="Buat Password (min 6 char)" class="w-full pl-11 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-[#0055A5] transition" required minlength="6">
+                        <button type="button" onclick="togglePassword('regPassword', 'eyeReg')" class="absolute right-4 text-gray-400 hover:text-brand-navy focus:outline-none">
+                            <i class="fa-solid fa-eye text-[13px]" id="eyeReg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" id="btnRegister" class="w-full bg-brand-navy text-white py-3.5 rounded-xl font-bold text-[14px] hover:bg-blue-900 transition shadow-md flex items-center justify-center mt-4">
+                    Buat Akun Sekarang
+                </button>
+
+                <div class="text-center pt-4 border-t border-gray-100 mt-4">
+                    <span class="text-[12px] text-gray-500 font-medium">Sudah punya akun?</span>
+                    <button type="button" onclick="switchView('login')" class="text-[12px] text-brand-light font-bold hover:underline ml-1">Masuk di sini</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="fixed bottom-6 w-full text-center z-10 pointer-events-none hidden sm:block">
+        <p class="text-[11px] text-white/80 font-medium drop-shadow-md">&copy; 2026 FoodSync HR Management System. All rights reserved.</p>
+    </div>
+
+    <script>
+        function togglePassword(inputId, iconId) {
+            const pwdInput = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(iconId);
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                eyeIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                pwdInput.type = 'password';
+                eyeIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function switchView(view) {
+            const loginBox = document.getElementById('loginContainer');
+            const regBox = document.getElementById('registerContainer');
+            if (view === 'register') {
+                loginBox.classList.add('hidden');
+                regBox.classList.remove('hidden');
+            } else {
+                regBox.classList.add('hidden');
+                loginBox.classList.remove('hidden');
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Konfigurasi Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8",
+            authDomain: "modul-hr-c889c.firebaseapp.com",
+            projectId: "modul-hr-c889c",
+            storageBucket: "modul-hr-c889c.firebasestorage.app",
+            messagingSenderId: "422365405521",
+            appId: "1:422365405521:web:79e314f0c8b54161dc3370"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ==========================================
+        // 1. PROSES LOGIN REGULER
+        // ==========================================
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const role = document.getElementById('loginRole').value;
+            const btn = document.getElementById('btnLogin');
+
+            if (!role) {
+                window.showToast("Mohon pilih Hak Akses terlebih dahulu!", "warning");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memverifikasi...';
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // PENTING: Simpan kedua Role ini agar fitur "View As" Super Admin berjalan
+                    localStorage.setItem('userRole', role); 
+                    localStorage.setItem('originalRole', role); 
+                    
+                    window.location.replace("dashboard.html");
+                })
+                .catch((error) => {
+                    let errorMessage = "Terjadi kesalahan saat login.";
+                    if(error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
+                        errorMessage = "Email atau Password yang Anda masukkan salah!";
+                    }
+                    window.showToast(errorMessage, "error");
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-right-to-bracket mr-2"></i> Login Aplikasi';
+                });
+        });
+
+        // ==========================================
+        // 2. PROSES REGISTRASI 
+        // ==========================================
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const role = document.getElementById('regRole').value;
+            const btn = document.getElementById('btnRegister');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Mendaftarkan...';
+
+            try {
+                // Buat Akun Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Simpan Profil ke Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    namaLengkap: name,
+                    email: email,
+                    role: role,
+                    createdAt: new Date().toISOString()
+                });
+
+                window.showToast("Registrasi berhasil! Silakan masuk menggunakan akun baru tersebut.", "success");
+                document.getElementById('registerForm').reset();
+                switchView('login');
+                
+            } catch (error) {
+                window.showToast("Gagal mendaftar: " + error.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Buat Akun Sekarang';
+            }
+        });
+    </script>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
+    <script>
+        window.showToast = function(message, type) {
+            type = type || 'success';
+            const container = document.getElementById('toastContainer');
+            if(!container) return alert(message);
+            const id = 'toast-' + Date.now();
+            const cfg = {
+                success: { bg: '#16a34a', icon: 'fa-circle-check' },
+                error:   { bg: '#dc2626', icon: 'fa-circle-xmark' },
+                info:    { bg: '#003B73', icon: 'fa-circle-info' },
+                warning: { bg: '#d97706', icon: 'fa-triangle-exclamation' }
+            };
+            const c = cfg[type] || cfg.success;
+            const el = document.createElement('div');
+            el.id = id;
+            el.className = 'pointer-events-auto px-5 py-3.5 rounded-2xl shadow-fly flex items-center gap-3 min-w-[280px] max-w-[380px] toast-enter';
+            el.style.cssText = `background:${c.bg}; color:#fff;`;
+            el.innerHTML = `<i class="fa-solid ${c.icon} text-lg shrink-0"></i><span style="font-size:13px;font-weight:600;flex:1;">${message}</span><button onclick="document.getElementById('${id}').remove()" style="opacity:.8;hover:opacity:1;background:none;border:none;cursor:pointer;color:#fff;"><i class="fa-solid fa-xmark"></i></button>`;
+            container.appendChild(el);
+            setTimeout(function() {
+                el.classList.replace('toast-enter', 'toast-exit');
+                setTimeout(function() { if(el.parentNode) el.remove(); }, 320);
+            }, 4200);
+        };
+    </script>
+</body>
+</html>

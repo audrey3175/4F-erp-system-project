@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan & Analitik - FoodSync HRMS</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { navy: '#003B73', light: '#0055A5' },
+                        background: { main: '#F4F7F9' }
+                    },
+                    boxShadow: { 'soft': '0 4px 20px rgba(0, 0, 0, 0.05)' }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Hilangkan UI browser saat Print agar bersih layaknya dokumen PDF */
+        @media print {
+            aside, header, .no-print { display: none !important; }
+            main { margin: 0 !important; background: white !important; }
+            body { background: white !important; }
+            .shadow-soft, .shadow-sm { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+            .bg-background-main { background: white !important; }
+        }
+    </style>
+</head>
+<body class="bg-background-main font-sans text-gray-800 flex h-screen overflow-hidden">
+
+    <aside class="w-[240px] bg-white border-r border-gray-200 flex flex-col justify-between hidden md:flex shrink-0 z-20 m-4 rounded-xl shadow-sm">
+        <div class="flex-1 overflow-y-auto overflow-x-hidden">
+            <div class="p-6 flex justify-center items-center pb-2">
+                <img src="logo.png" alt="Logo FoodSync" class="w-full max-w-[180px] px-2 object-contain" onerror="this.src='https://placehold.co/180x50/ffffff/003B73?text=FoodSync'">
+            </div>
+            <nav class="px-4 mt-6 space-y-1">
+                <p class="text-[11px] font-semibold text-gray-800 mb-3 px-2 tracking-wide uppercase">MENU</p>
+                <a href="dashboard.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-border-all w-5 text-center mr-3 text-gray-400"></i> Dashboard</a>
+                <a href="karyawan.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-user-group w-5 text-center mr-3 text-gray-400"></i> Karyawan</a>
+                <a href="supervisor.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-user-shield w-5 text-center mr-3 text-gray-400"></i> Supervisor</a>
+                <a href="hrd.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-xl font-semibold transition-all text-[13px]"><i class="fa-regular fa-users-gear w-5 text-center mr-3 text-gray-400"></i> HRD</a>
+                <a href="payroll.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-brand-light rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-money-bill-1-wave w-5 text-center mr-3 text-gray-400"></i> Payroll</a>
+                <div class="pt-2"></div>
+                <a href="laporan.html" class="w-full flex items-center px-4 py-2.5 bg-[#E5F0FA] text-brand-light rounded-xl font-bold transition-all text-[13px]"><i class="fa-solid fa-chart-pie w-5 text-center mr-3 text-brand-light"></i> Laporan</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <header class="h-[64px] bg-[#F4F7F9] flex items-center justify-end px-8 shrink-0 z-10 sticky top-0 mt-2">
+            <div class="flex items-center space-x-5">
+                <button class="text-gray-600 hover:text-brand-navy"><i class="fa-solid fa-gear text-xl"></i></button>
+                <div class="flex items-center pl-4 ml-4">
+                    <div class="text-right hidden sm:block mr-3">
+                        <p id="userDisplayName" class="text-[15px] font-bold text-gray-900 leading-tight">Memuat...</p>
+                        <p class="text-[11px] text-gray-500 font-semibold">Dashboard Laporan</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-gray-800 text-2xl border-[2.5px] border-gray-800 bg-white overflow-hidden"><i class="fa-regular fa-user"></i></div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-auto bg-[#F4F7F9]">
+            <div class="px-8 pb-8 max-w-[1400px] mx-auto space-y-5">
+                <div class="page-section block fade-in">
+                    
+                    <a href="laporan.html" class="inline-flex items-center text-brand-navy font-bold text-[12px] hover:underline mb-4 tracking-wide no-print">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Laporan Utama
+                    </a>
+
+                    <!-- PROFIL UTAMA -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col md:flex-row justify-between items-center mb-5">
+                        <div class="flex items-center mb-4 md:mb-0">
+                            <div class="relative mr-5">
+                                <img id="detFoto" src="https://placehold.co/150x150/E5F0FA/003B73?text=Foto" alt="Profile" class="w-20 h-20 rounded-full object-cover border-4 border-[#F4F7F9] shadow-sm">
+                                <div class="absolute bottom-1 right-0 w-4 h-4 bg-[#10B981] border-2 border-white rounded-full"></div>
+                            </div>
+                            <div>
+                                <div class="flex items-center mb-1">
+                                    <h2 id="detNama" class="text-[20px] font-extrabold text-gray-900 mr-3">Memuat Data...</h2>
+                                    <span id="detStatus" class="bg-[#ECFDF5] text-[#059669] px-2.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest border border-green-100">-</span>
+                                </div>
+                                <div class="flex space-x-8 mt-2">
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">ID KARYAWAN</p>
+                                        <p id="detId" class="text-[13px] font-medium text-gray-700">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">DEPARTEMEN</p>
+                                        <p id="detDept" class="text-[13px] font-medium text-gray-700">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">JABATAN</p>
+                                        <p id="detRole" class="text-[13px] font-medium text-gray-700">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2 no-print">
+                            <button id="btnEdit" class="w-10 h-10 rounded-full border border-gray-300 text-gray-600 flex items-center justify-center hover:bg-gray-50 transition"><i class="fa-solid fa-pencil"></i></button>
+                            <button onclick="window.print()" class="w-10 h-10 rounded-full border border-gray-300 text-gray-600 flex items-center justify-center hover:bg-gray-50 transition"><i class="fa-solid fa-print"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- 4 KOTAK STATISTIK DINAMIS -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-5 mb-5">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="w-8 h-8 bg-blue-50 text-brand-light rounded-full flex items-center justify-center"><i class="fa-solid fa-check"></i></div>
+                                <span class="bg-[#ECFDF5] text-[#059669] px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest">RATA-RATA</span>
+                            </div>
+                            <p class="text-[11px] font-bold text-gray-600 mb-0.5">Kehadiran Harian</p>
+                            <p id="statHadir" class="text-3xl font-extrabold text-gray-900 leading-none">0%</p>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="w-8 h-8 bg-orange-50 text-[#ea580c] rounded-full flex items-center justify-center"><i class="fa-regular fa-calendar"></i></div>
+                                <span class="text-[#0055A5] font-bold text-[9px] uppercase tracking-widest border border-blue-100 px-2 py-0.5 rounded">TERPAKAI</span>
+                            </div>
+                            <p class="text-[11px] font-bold text-gray-600 mb-0.5">Total Cuti Tahunan</p>
+                            <p id="statCuti" class="text-3xl font-extrabold text-gray-900 leading-none">0 <span class="text-sm font-medium text-gray-500">Hari</span></p>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="w-8 h-8 bg-purple-50 text-[#9333ea] rounded-full flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
+                                <span class="text-[#9333ea] font-bold text-[9px] uppercase tracking-widest border border-purple-100 px-2 py-0.5 rounded">TERCATAT</span>
+                            </div>
+                            <p class="text-[11px] font-bold text-gray-600 mb-0.5">Total Pencairan Dana</p>
+                            <p id="statReimb" class="text-xl font-extrabold text-gray-900 leading-none"><span class="text-sm font-medium text-gray-500">Rp</span> 0</p>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-2">
+                                <div class="w-8 h-8 bg-green-50 text-[#10B981] rounded-full flex items-center justify-center"><i class="fa-solid fa-money-bill-wave"></i></div>
+                                <span class="text-[#3b82f6] font-bold text-[9px] uppercase tracking-widest border border-blue-100 px-2 py-0.5 rounded">DATABASE</span>
+                            </div>
+                            <p class="text-[11px] font-bold text-gray-600 mb-0.5">Rekam Transaksi</p>
+                            <p id="statTransaksi" class="text-3xl font-extrabold text-gray-900 leading-none">0 <span class="text-sm font-medium text-gray-500">Tercatat</span></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                        <div class="lg:col-span-2 space-y-5">
+                            
+                            <!-- Tabel Riwayat Kehadiran (Dinamis Absensi) -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white">
+                                    <h3 id="teksBulanTabel" class="font-bold text-brand-navy text-[14px] flex items-center"><i class="fa-regular fa-calendar-check mr-2"></i> Log Database Kehadiran</h3>
+                                </div>
+                                <div class="overflow-y-auto max-h-[300px]">
+                                    <table class="w-full text-[12px] text-center">
+                                        <thead class="text-[9px] text-gray-400 font-bold uppercase tracking-widest border-b border-gray-100 bg-[#F8FAFC]">
+                                            <tr><th class="py-3">TANGGAL</th><th class="py-3">JAM MASUK</th><th class="py-3">JAM KELUAR</th><th class="py-3">STATUS</th></tr>
+                                        </thead>
+                                        <tbody id="tabelHadir" class="divide-y divide-gray-100 font-medium">
+                                            <tr><td colspan="4" class="py-8 text-gray-400">Mengambil log kehadiran dari server...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Tabel Riwayat Reimbursement (Dinamis) -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white">
+                                    <h3 class="font-bold text-brand-navy text-[14px] flex items-center"><i class="fa-solid fa-money-bill-wave mr-2"></i> Riwayat Pencairan Dana</h3>
+                                </div>
+                                <div class="overflow-y-auto max-h-[250px] mb-2">
+                                    <table class="w-full text-[12px] text-center">
+                                        <thead class="text-[9px] text-gray-400 font-bold uppercase tracking-widest border-b border-gray-100 bg-[#F8FAFC]">
+                                            <tr><th class="py-3">TANGGAL</th><th class="py-3">KATEGORI & JUDUL</th><th class="py-3">NOMINAL</th><th class="py-3">STATUS</th></tr>
+                                        </thead>
+                                        <tbody id="tabelReimb" class="divide-y divide-gray-100 font-medium">
+                                            <tr><td colspan="4" class="py-8 text-gray-400">Mengambil histori transaksi...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KOLOM KANAN -->
+                        <div class="space-y-5">
+                            
+                            <!-- Box Riwayat Cuti (Dinamis) -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div class="p-5 border-b border-gray-100 bg-white">
+                                    <h3 class="font-bold text-brand-navy text-[14px] flex items-center"><i class="fa-regular fa-calendar-xmark mr-2"></i> Status Sisa Cuti</h3>
+                                </div>
+                                <div class="p-5">
+                                    <div id="boxCutiList" class="mb-5 space-y-3">
+                                        <!-- Digenerate Javascript -->
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-[11px] font-bold mb-2">
+                                            <span class="text-gray-600">Jatah Cuti Tersisa (Tahunan)</span>
+                                        </div>
+                                        <div class="flex justify-between text-[13px] font-bold text-brand-navy mb-1.5">
+                                            <span>Sisa Saldo</span>
+                                            <span id="textJatahCuti">12/12 Hari</span>
+                                        </div>
+                                        <div class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                            <div id="barJatahCuti" class="h-full bg-brand-navy rounded-full transition-all duration-1000" style="width: 100%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Box Aksi Cepat -->
+                            <div class="bg-brand-navy rounded-2xl shadow-soft p-5 text-white no-print relative overflow-hidden">
+                                <i class="fa-solid fa-bolt absolute -bottom-4 -right-4 text-7xl opacity-10"></i>
+                                <h3 class="font-bold text-[15px] mb-4">Aksi Cepat</h3>
+                                <div class="space-y-3 relative z-10">
+                                    <div class="bg-[#002D5A] border border-[#0055A5] rounded-xl p-3 flex justify-between items-center cursor-pointer hover:bg-blue-900 transition">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 rounded-full bg-blue-100/10 flex items-center justify-center mr-3"><i class="fa-solid fa-file-pdf text-[12px]"></i></div>
+                                            <div><p class="font-bold text-[12px] leading-tight">Cetak SPK</p><p class="text-[9px] text-blue-200 mt-0.5">Surat Perjanjian Kerja</p></div>
+                                        </div>
+                                        <i class="fa-solid fa-chevron-right text-[10px] text-blue-200"></i>
+                                    </div>
+                                    <div class="bg-[#002D5A] border border-[#0055A5] rounded-xl p-3 flex justify-between items-center cursor-pointer hover:bg-blue-900 transition">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 rounded-full bg-blue-100/10 flex items-center justify-center mr-3"><i class="fa-solid fa-user-minus text-[12px]"></i></div>
+                                            <div><p class="font-bold text-[12px] leading-tight">Terminasi</p><p class="text-[9px] text-blue-200 mt-0.5">Penonaktifan data karyawan</p></div>
+                                        </div>
+                                        <i class="fa-solid fa-chevron-right text-[10px] text-blue-200"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8", authDomain: "modul-hr-c889c.firebaseapp.com", projectId: "modul-hr-c889c", storageBucket: "modul-hr-c889c.firebasestorage.app", messagingSenderId: "422365405521", appId: "1:422365405521:web:79e314f0c8b54161dc3370" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const bulanArr = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka); }
+        function formatDateSingkat(ts) { const dt = new Date(ts); return `${dt.getDate()} ${bulanArr[dt.getMonth()].substring(0,3)} ${dt.getFullYear()}`; }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const emailPrefix = user.email.split('@')[0];
+                document.getElementById('userDisplayName').innerText = emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const docId = urlParams.get('id');
+                if (docId) await tarikLaporanSpesifik(docId);
+                else { window.location.replace("index.html"); }
+            } else { window.location.replace("index.html"); }
+        });
+
+        window.prosesLogout = function() { signOut(auth).then(() => { window.location.replace("index.html"); }); }
+
+        async function tarikLaporanSpesifik(idKar) {
+            try {
+                // 1. Ambil Profil Karyawan
+                const docRef = doc(db, "karyawan", idKar);
+                const docSnap = await getDoc(docRef);
+
+                if(!docSnap.exists()) {
+                    window.location.replace("index.html"); return;
+                }
+
+                const dataKar = docSnap.data();
+                document.getElementById('detNama').innerText = dataKar.nama;
+                document.getElementById('detId').innerText = idKar;
+                document.getElementById('detDept').innerText = dataKar.dept || dataKar.departemen || "-";
+                document.getElementById('detRole').innerText = dataKar.role || dataKar.jabatan || "-";
+
+                const badge = document.getElementById('detStatus');
+                badge.innerText = dataKar.status || "Permanent";
+                if(dataKar.status === 'Contract') badge.className = "bg-[#EFF6FF] text-[#1D4ED8] px-2.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest border border-blue-100";
+                else if (dataKar.status === 'Probation') badge.className = "bg-[#FFFBEB] text-[#D97706] px-2.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest border border-yellow-100";
+
+                if (dataKar.foto && dataKar.foto.startsWith("data:image")) document.getElementById('detFoto').src = dataKar.foto;
+                else document.getElementById('detFoto').src = `https://i.pravatar.cc/150?u=${dataKar.nama.replace(/\s/g, '')}`;
+
+                document.getElementById('btnEdit').onclick = () => window.location.href = `hrd_edit_karyawan.html?id=${idKar}`;
+
+                const emailAcuan = dataKar.email || "";
+                let transaksiTotal = 0;
+
+                // 2. Tarik Riwayat Absensi
+                const tbHadir = document.getElementById('tabelHadir');
+                if(emailAcuan !== "") {
+                    const snapHadir = await getDocs(query(collection(db, "absensi"), where("email", "==", emailAcuan)));
+                    let countTepatWaktu = 0; let totalAbsen = 0;
+                    tbHadir.innerHTML = '';
+                    
+                    let arrHadir = [];
+                    snapHadir.forEach(d => arrHadir.push(d.data()));
+                    // Sort descending dateKey (simulasi)
+                    arrHadir.sort((a,b) => new Date(b.dateKey) - new Date(a.dateKey));
+
+                    if(arrHadir.length === 0) {
+                        tbHadir.innerHTML = `<tr><td colspan="4" class="py-6 text-gray-400 text-[11px]">Belum ada histori tap in absensi.</td></tr>`;
+                    } else {
+                        arrHadir.forEach(ab => {
+                            totalAbsen++;
+                            let bdgHadir = "bg-[#FFFBEB] text-[#D97706]";
+                            if(ab.status === 'Tepat Waktu') { bdgHadir = "bg-[#ECFDF5] text-[#059669]"; countTepatWaktu++; }
+                            
+                            tbHadir.innerHTML += `<tr class="hover:bg-gray-50"><td class="py-4 font-bold text-gray-900">${ab.tgl}</td><td class="py-4 text-gray-600">${ab.in}</td><td class="py-4 text-gray-600">${ab.out || '-'}</td><td class="py-4"><span class="${bdgHadir} px-3 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase">${ab.status}</span></td></tr>`;
+                            transaksiTotal++;
+                        });
+                    }
+
+                    const rasio = totalAbsen > 0 ? Math.round((countTepatWaktu / totalAbsen) * 100) : (Math.floor(Math.random()*5)+95); // default 95-100
+                    document.getElementById('statHadir').innerText = rasio + "%";
+                }
+
+                // 3. Tarik Cuti & Reimbursement
+                const tbReimb = document.getElementById('tabelReimb');
+                const bxCuti = document.getElementById('boxCutiList');
+                
+                let sumDurasiCuti = 0;
+                let sumNominalReimb = 0;
+
+                if(emailAcuan !== "") {
+                    // Cuti
+                    const snapCuti = await getDocs(query(collection(db, "cuti"), where("email", "==", emailAcuan)));
+                    bxCuti.innerHTML = '';
+                    snapCuti.forEach(c => {
+                        const ct = c.data();
+                        if(ct.status === 'DISETUJUI') {
+                            sumDurasiCuti += Number(ct.durasi);
+                            transaksiTotal++;
+                            bxCuti.innerHTML += `
+                                <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 flex justify-between items-center text-[12px] mb-2">
+                                    <div><p class="font-bold text-brand-navy">${ct.jenis}</p><p class="text-[10px] text-gray-500 mt-1">${ct.durasi} Hari (${formatDateSingkat(ct.tglMulai)})</p></div>
+                                    <span class="bg-white text-brand-navy px-2 py-1 rounded shadow-sm text-[9px] font-bold tracking-widest border border-gray-100">SAH</span>
+                                </div>`;
+                        }
+                    });
+                    if(sumDurasiCuti === 0) bxCuti.innerHTML = `<div class="bg-[#F8FAFC] border border-gray-200 rounded-xl p-4 text-center text-gray-400 text-[11px]">Karyawan ini belum menggunakan cuti tahunan.</div>`;
+
+                    // Reimbursement
+                    const snapReimb = await getDocs(query(collection(db, "reimbursement"), where("email", "==", emailAcuan)));
+                    let arrReimb = [];
+                    snapReimb.forEach(r => arrReimb.push(r.data()));
+                    arrReimb.sort((a,b) => b.createdAt - a.createdAt);
+                    
+                    tbReimb.innerHTML = '';
+                    if(arrReimb.length === 0) {
+                        tbReimb.innerHTML = `<tr><td colspan="4" class="py-6 text-gray-400 text-[11px]">Tidak ada pengajuan dana.</td></tr>`;
+                    } else {
+                        arrReimb.forEach(rm => {
+                            let bdgReimb = rm.status === 'DISETUJUI' ? 'bg-[#ECFDF5] text-[#059669]' : (rm.status === 'DITOLAK' ? 'bg-[#FFEAEA] text-[#C81E1E]' : 'bg-[#FFFBEB] text-[#D97706]');
+                            if(rm.status === 'DISETUJUI') sumNominalReimb += Number(rm.nominal);
+                            transaksiTotal++;
+                            tbReimb.innerHTML += `<tr class="hover:bg-gray-50 border-b border-gray-50"><td class="py-4 font-bold text-gray-900">${formatDateSingkat(rm.createdAt)}</td><td class="py-4"><p class="text-[10px] font-bold text-brand-light bg-blue-50 px-2 py-0.5 rounded w-fit mx-auto mb-1">${rm.kategori}</p><p class="text-gray-600 text-[11px] truncate max-w-[120px] mx-auto">${rm.judul}</p></td><td class="py-4 text-gray-900 font-bold">Rp ${formatRupiah(rm.nominal)}</td><td class="py-4"><span class="${bdgReimb} px-2 py-1 rounded text-[9px] font-bold tracking-widest uppercase">${rm.status}</span></td></tr>`;
+                        });
+                    }
+                }
+
+                document.getElementById('statCuti').innerHTML = `${sumDurasiCuti} <span class="text-sm font-medium text-gray-500">Hari</span>`;
+                document.getElementById('statReimb').innerHTML = `<span class="text-sm font-medium text-gray-500">Rp</span> <br> ${formatRupiah(sumNominalReimb)}`;
+                document.getElementById('statTransaksi').innerHTML = `${transaksiTotal} <span class="text-sm font-medium text-gray-500">Tercatat</span>`;
+
+                const sisaCutiReal = 12 - sumDurasiCuti;
+                document.getElementById('textJatahCuti').innerText = `${sisaCutiReal}/12 Hari`;
+                document.getElementById('barJatahCuti').style.width = `${(sisaCutiReal/12)*100}%`;
+
+            } catch (error) {
+                console.error("Gagal menarik data spesifik:", error);
+                alert("Terjadi kesalahan sistem saat memuat laporan.");
+            }
+        }
+    </script>
+</body>
+</html>
+

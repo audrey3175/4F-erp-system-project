@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRD Dashboard - FoodSync HRMS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { navy: '#003B73', light: '#0055A5' }, background: { main: '#F4F7F9' } }, boxShadow: { 'soft': '0 4px 20px rgba(0, 0, 0, 0.05)', 'fly': '0 10px 40px rgba(0, 0, 0, 0.1)' } } } }
+    </script>
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .toast-enter { animation: toastIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        .toast-exit  { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastIn  { from { opacity:0; transform:translateX(110%); } to { opacity:1; transform:translateX(0); } }
+        @keyframes toastOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(110%); } }
+    </style>
+
+    <!-- ANTI-FLICKER RBAC SCRIPT -->
+    <script>
+        (function() {
+            const role = localStorage.getItem('userRole');
+            let css = '';
+            if (role === 'Karyawan') css = '#labelManajemen, #menuSupervisor, #menuHrd, #menuPayroll, #menuLaporan { display: none !important; }';
+            else if (role === 'Supervisor') css = '#menuHrd, #menuPayroll, #menuLaporan { display: none !important; }';
+            else if (role === 'HRD') css = '#menuSupervisor, #menuPayroll { display: none !important; }';
+            else if (role === 'Payroll') css = '#menuSupervisor, #menuHrd { display: none !important; }';
+            if (css) { const style = document.createElement('style'); style.innerHTML = css; document.head.appendChild(style); }
+        })();
+    </script>
+</head>
+<body class="bg-background-main font-sans text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-[240px] bg-white border-r border-gray-200 flex flex-col justify-between hidden md:flex shrink-0 z-20 m-4 rounded-xl shadow-sm">
+        <div class="flex-1 overflow-y-auto overflow-x-hidden">
+            <div class="p-6 flex justify-center items-center pb-2">
+                <img src="logo.png" alt="Logo FoodSync" class="w-full max-w-[180px] px-2 object-contain" onerror="this.src='https://placehold.co/180x50/ffffff/003B73?text=FoodSync'">
+            </div>
+            <nav class="px-4 mt-6 space-y-1">
+                <p class="text-[11px] font-semibold text-gray-800 mb-2 mt-2 px-2 tracking-wide uppercase">MENU UTAMA</p>
+                <a href="dashboard.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-border-all w-5 text-center mr-3 text-gray-400"></i> Dashboard</a>
+                
+                <p class="text-[11px] font-semibold text-gray-800 mb-2 mt-5 px-2 tracking-wide uppercase">SELF SERVICE</p>
+                <a href="karyawan.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-fingerprint w-5 text-center mr-3 text-gray-400"></i> Presensi</a>
+                <a href="karyawan_cuti.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-calendar-minus w-5 text-center mr-3 text-gray-400"></i> Pengajuan Cuti</a>
+                <a href="karyawan_reimbursement.html" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-money-bill-wave w-5 text-center mr-3 text-gray-400"></i> Reimbursement</a>
+
+                <p id="labelManajemen" class="text-[11px] font-semibold text-gray-800 mb-2 mt-5 px-2 tracking-wide uppercase">MANAJEMEN</p>
+                <a href="supervisor.html" id="menuSupervisor" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-user-shield w-5 text-center mr-3 text-gray-400"></i> Supervisor</a>
+                <a href="hrd.html" id="menuHrd" class="w-full flex items-center px-4 py-2.5 bg-[#E5F0FA] text-brand-light font-bold rounded-xl transition-all text-[13px]"><i class="fa-regular fa-users-gear w-5 text-center mr-3 text-brand-light"></i> HRD</a>
+                <a href="payroll.html" id="menuPayroll" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-file-invoice-dollar w-5 text-center mr-3 text-gray-400"></i> Payroll</a>
+                <a href="laporan.html" id="menuLaporan" class="w-full flex items-center px-4 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-[#0055A5] rounded-xl font-semibold transition-all text-[13px]"><i class="fa-solid fa-chart-pie w-5 text-center mr-3 text-gray-400"></i> Laporan</a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-gray-100">
+            <a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <!-- HEADER -->
+        <header class="h-[64px] bg-[#F4F7F9] flex items-center justify-end px-8 shrink-0 z-50 sticky top-0 mt-2 relative">
+            <div class="flex items-center space-x-2 ml-auto">
+                <div class="relative">
+                    <button onclick="window.toggleDropdown('settingsDropdown')" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-brand-navy transition-colors"><i class="fa-solid fa-gear text-xl"></i></button>
+                                        <div id="settingsDropdown" class="hidden absolute right-0 mt-3 w-[260px] bg-white rounded-3xl shadow-fly border border-gray-100 py-3 fade-in z-50">
+                        <h3 class="px-6 py-2 text-[14px] font-black text-gray-400 uppercase tracking-widest mb-1">Pengaturan</h3>
+                        <a href="profil.html" class="flex items-center px-6 py-3 hover:bg-gray-50 transition cursor-pointer"><i class="fa-regular fa-circle-user text-lg text-gray-400 w-8"></i><p class="text-[14px] font-bold text-gray-700">Profil Saya</p></a>
+                        <a href="keamanan.html" class="flex items-center px-6 py-3 hover:bg-gray-50 transition cursor-pointer"><i class="fa-solid fa-shield-halved text-lg text-gray-400 w-8"></i><p class="text-[14px] font-bold text-gray-700">Keamanan</p></a>
+                        <div class="my-2 border-t border-gray-50"></div>
+                        <div class="px-4 mt-2"><a href="#" onclick="window.prosesLogout()" class="w-full flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-extrabold text-[13px] shadow-sm"><i class="fa-solid fa-arrow-right-from-bracket mr-2 text-white"></i> Logout</a></div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <button onclick="window.toggleDropdown('notifDropdown')" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-brand-navy transition-colors relative"><i class="fa-regular fa-bell text-xl"></i></button>
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-[340px] bg-white rounded-2xl shadow-fly border border-gray-100 py-3 fade-in z-50 flex flex-col max-h-[500px]"><div class="px-5 py-2 flex justify-between items-center mb-1 shrink-0"><h3 class="text-[18px] font-extrabold text-gray-900">Notifikasi</h3></div><div id="notifList" class="flex-1 overflow-y-auto overflow-x-hidden"></div></div>
+                </div>
+                <div class="flex items-center pl-4 ml-2">
+                    <div class="text-right hidden sm:block mr-3">
+                        <p id="userDisplayName" class="text-[14px] font-bold text-gray-900 leading-tight">Memuat...</p>
+                        <p class="text-[11px] text-gray-500 font-semibold">Human Resources</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-gray-800 text-2xl border-[2.5px] border-gray-800 bg-blue-50 overflow-hidden"><i class="fa-regular fa-user"></i></div>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-auto bg-[#F4F7F9]">
+            <div class="px-8 pb-8 max-w-[1400px] mx-auto space-y-6">
+                <div class="page-section block fade-in">
+
+                    <div class="mb-2 mt-6 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                        <div>
+                            <h1 class="text-[24px] font-black text-brand-navy tracking-tight">Human Resource Management</h1>
+                            <p class="text-[13px] text-gray-400 font-medium mt-0.5">Kelola master data seluruh karyawan perusahaan.</p>
+                        </div>
+                        <button onclick="window.location.href='hrd_tambah_karyawan.html'" class="bg-brand-navy text-white px-5 py-2.5 rounded-xl text-[13px] font-extrabold hover:bg-blue-900 shadow-md transition flex items-center shrink-0">
+                            <i class="fa-solid fa-plus mr-2"></i> Tambah Karyawan
+                        </button>
+                    </div>
+
+                    <!-- KPI CARDS -->
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-users text-blue-600 text-lg"></i>
+                                </div>
+                                <span class="text-[10px] font-black px-2 py-1 rounded-lg" style="background:#eff6ff;color:#2563eb;">TOTAL</span>
+                            </div>
+                            <p id="kpiTotalKaryawan" class="text-[32px] font-black text-gray-900 leading-none mb-1">-</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Total Karyawan</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-teal-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-sitemap text-teal-500 text-lg"></i>
+                                </div>
+                                <span class="text-[10px] font-black px-2 py-1 rounded-lg" style="background:#f0fdfa;color:#0d9488;">DIVISI</span>
+                            </div>
+                            <p id="kpiTotalDept" class="text-[32px] font-black text-gray-900 leading-none mb-1">-</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Departemen Aktif</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-briefcase text-purple-500 text-lg"></i>
+                                </div>
+                                <span class="text-[10px] font-black px-2 py-1 rounded-lg" style="background:#faf5ff;color:#9333ea;">POSISI</span>
+                            </div>
+                            <p id="kpiTotalJabatan" class="text-[32px] font-black text-gray-900 leading-none mb-1">-</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Jabatan Unik</p>
+                        </div>
+                        <div class="stat-card bg-white rounded-2xl border border-gray-100 p-5 shadow-soft">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
+                                    <i class="fa-solid fa-circle-check text-green-500 text-lg"></i>
+                                </div>
+                                <span class="text-[10px] font-black px-2 py-1 rounded-lg" style="background:#f0fdf4;color:#16a34a;">AKTIF</span>
+                            </div>
+                            <p id="kpiKaryawanAktif" class="text-[32px] font-black text-gray-900 leading-none mb-1">-</p>
+                            <p class="text-[12px] font-semibold text-gray-400">Karyawan Aktif</p>
+                        </div>
+                    </div>
+
+                    <!-- TABEL DATA KARYAWAN -->
+                    <div class="bg-white rounded-2xl shadow-soft border border-gray-100 overflow-hidden">
+                        <div class="p-5 border-b border-gray-100 bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <h3 class="font-black text-brand-navy text-[15px] flex items-center">
+                                <i class="fa-solid fa-id-card mr-2 text-brand-light text-base"></i> Daftar Karyawan Aktif
+                            </h3>
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-[13px]"></i>
+                                <input type="text" id="searchKaryawan" placeholder="Cari nama atau departemen..." class="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-brand-light w-[260px] bg-gray-50" onkeyup="cariKaryawan()">
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-[13px] text-left" id="tabelKaryawan">
+                                <thead class="text-[11px] text-gray-400 font-black uppercase tracking-widest border-b border-gray-100" style="background:#F8FAFC;">
+                                    <tr>
+                                        <th class="px-6 py-4">Karyawan</th>
+                                        <th class="px-6 py-4">NIK</th>
+                                        <th class="px-6 py-4">Departemen &amp; Jabatan</th>
+                                        <th class="px-6 py-4">Status</th>
+                                        <th class="px-6 py-4 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyHrd" class="divide-y divide-gray-50 text-gray-700">
+                                    <tr><td colspan="5" class="py-10 text-center text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Empty state saat pencarian kosong -->
+                        <div id="emptySearch" class="hidden py-12 text-center">
+                            <i class="fa-solid fa-magnifying-glass text-4xl text-gray-200 mb-3 block"></i>
+                            <p class="text-[14px] font-bold text-gray-400">Karyawan tidak ditemukan</p>
+                            <p class="text-[12px] text-gray-300 mt-1">Coba kata kunci yang berbeda</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="modalHapus" class="hidden fixed inset-0 z-[9998] flex items-center justify-center" style="background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);">
+        <div class="bg-white rounded-2xl shadow-fly p-7 w-[380px] mx-4 fade-in">
+            <div class="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center" style="background:#fef2f2;">
+                <i class="fa-solid fa-triangle-exclamation text-2xl" style="color:#dc2626;"></i>
+            </div>
+            <h3 class="text-[16px] font-black text-gray-900 text-center mb-2">Konfirmasi Hapus</h3>
+            <p class="text-[13px] text-gray-500 text-center mb-1">Anda akan menghapus permanen data karyawan:</p>
+            <p id="modalNamaKaryawan" class="text-[14px] font-black text-red-600 text-center mb-5"></p>
+            <p class="text-[12px] text-gray-400 text-center mb-5">Tindakan ini tidak dapat dibatalkan.</p>
+            <div class="flex gap-3">
+                <button onclick="tutupModalHapus()" class="flex-1 py-2.5 rounded-xl text-[13px] font-extrabold transition" style="background:#f3f4f6;color:#374151;" onmouseover="this.style.background='#e5e7eb';" onmouseout="this.style.background='#f3f4f6';">
+                    Batal
+                </button>
+                <button id="btnKonfirmasiHapus" class="flex-1 py-2.5 rounded-xl text-[13px] font-extrabold text-white transition" style="background:#dc2626;" onmouseover="this.style.background='#b91c1c';" onmouseout="this.style.background='#dc2626';">
+                    <i class="fa-solid fa-trash mr-2"></i> Ya, Hapus
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- WIDGET VIEW AS ROLE (Khusus Super Admin) -->
+    <script>
+        (function() {
+            if (localStorage.getItem('originalRole') === 'SuperAdmin') {
+                const currentSimRole = localStorage.getItem('userRole');
+                const widgetHTML = `
+                    <div id="superAdminWidget" class="fade-in" style="position:fixed; bottom:20px; right:20px; background:linear-gradient(135deg, #003B73, #0055A5); color:white; padding:16px; border-radius:16px; z-index:99999; box-shadow:0 15px 35px rgba(0,0,0,0.3); border:2px solid #60A5FA; width:220px; font-family:Inter, sans-serif;">
+                        <p style="font-size:11px; font-weight:800; margin-bottom:6px; color:#93C5FD; letter-spacing:1px; text-transform:uppercase;">🕵️ SUPER ADMIN MODE</p>
+                        <p style="font-size:12px; margin-bottom:12px; font-weight:500;">Simulasi Layar: <strong style="color:#FCD34D;">${currentSimRole}</strong></p>
+                        <select id="roleSwitcher" style="width:100%; padding:8px; border-radius:8px; color:#1F2937; font-size:13px; font-weight:700; cursor:pointer; border:none; outline:none;">
+                            <option value="SuperAdmin" ${currentSimRole === 'SuperAdmin' ? 'selected' : ''}>🌟 Super Admin</option>
+                            <option value="Karyawan" ${currentSimRole === 'Karyawan' ? 'selected' : ''}>👤 Karyawan</option>
+                            <option value="Supervisor" ${currentSimRole === 'Supervisor' ? 'selected' : ''}>👔 Supervisor</option>
+                            <option value="HRD" ${currentSimRole === 'HRD' ? 'selected' : ''}>📁 HRD</option>
+                            <option value="Payroll" ${currentSimRole === 'Payroll' ? 'selected' : ''}>💰 Payroll</option>
+                        </select>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', widgetHTML);
+                document.getElementById('roleSwitcher').addEventListener('change', function(e) {
+                    localStorage.setItem('userRole', e.target.value);
+                    if(e.target.value === 'Karyawan' || e.target.value === 'Supervisor') window.location.href = 'dashboard.html';
+                    else window.location.reload();
+                });
+            }
+        })();
+    </script>
+
+    <script>
+        window.toggleDropdown = function(id) {
+            const dropdown = document.getElementById(id);
+            if(id !== 'settingsDropdown') document.getElementById('settingsDropdown').classList.add('hidden');
+            if(id !== 'notifDropdown') document.getElementById('notifDropdown').classList.add('hidden');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Fitur Pencarian Tabel dengan empty state
+        function cariKaryawan() {
+            const input = document.getElementById("searchKaryawan").value.toUpperCase();
+            const tbody = document.getElementById("tbodyHrd");
+            const emptyEl = document.getElementById("emptySearch");
+            const rows = tbody.getElementsByTagName("tr");
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                // Cari di seluruh kolom (nama, departemen, jabatan, NIK)
+                const rowText = (rows[i].textContent || rows[i].innerText).toUpperCase();
+                if (rowText.indexOf(input) > -1) {
+                    rows[i].style.display = "";
+                    visibleCount++;
+                } else {
+                    rows[i].style.display = "none";
+                }
+            }
+
+            // Tampilkan empty state jika tidak ada hasil
+            if (emptyEl) {
+                if (input.length > 0 && visibleCount === 0) {
+                    emptyEl.classList.remove('hidden');
+                } else {
+                    emptyEl.classList.add('hidden');
+                }
+            }
+        }
+
+        // Modal Hapus
+        let idHapusPending = null;
+        window.bukaModalHapus = function(id, nama) {
+            idHapusPending = id;
+            document.getElementById('modalNamaKaryawan').innerText = nama;
+            document.getElementById('modalHapus').classList.remove('hidden');
+        };
+        window.tutupModalHapus = function() {
+            idHapusPending = null;
+            document.getElementById('modalHapus').classList.add('hidden');
+        };
+        // Tutup modal saat klik backdrop
+        document.getElementById('modalHapus').addEventListener('click', function(e) {
+            if (e.target === this) window.tutupModalHapus();
+        });
+    </script>
+
+    <!-- FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8", authDomain: "modul-hr-c889c.firebaseapp.com", projectId: "modul-hr-c889c", storageBucket: "modul-hr-c889c.firebasestorage.app", messagingSenderId: "422365405521", appId: "1:422365405521:web:79e314f0c8b54161dc3370" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const currentRole = localStorage.getItem('userRole');
+                if(!currentRole) { window.location.replace("index.html"); return; }
+                const rawName = user.email.split('@')[0];
+                document.getElementById('userDisplayName').innerText = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+
+                // Load Data Karyawan
+                await muatDataKaryawan();
+            } else { window.location.replace("index.html"); }
+        });
+
+        window.prosesLogout = function() {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('originalRole');
+            signOut(auth).then(() => { window.location.replace("index.html"); });
+        };
+
+        // Toast notification system
+        function showToast(message, type) {
+            type = type || 'success';
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const id = 'toast-' + Date.now();
+            const cfg = {
+                success: { bg: '#16a34a', icon: 'fa-circle-check' },
+                error:   { bg: '#dc2626', icon: 'fa-circle-xmark' },
+                info:    { bg: '#003B73', icon: 'fa-circle-info' }
+            };
+            const c = cfg[type] || cfg.success;
+            const el = document.createElement('div');
+            el.id = id;
+            el.className = 'pointer-events-auto px-5 py-3.5 rounded-2xl shadow-fly flex items-center gap-3 min-w-[280px] max-w-[380px] toast-enter';
+            el.style.cssText = `background:${c.bg};color:#fff;`;
+            el.innerHTML = `<i class="fa-solid ${c.icon} text-lg shrink-0"></i><span style="font-size:13px;font-weight:600;flex:1;">${message}</span><button onclick="document.getElementById('${id}').remove()" style="opacity:.8;background:none;border:none;cursor:pointer;color:#fff;"><i class="fa-solid fa-xmark"></i></button>`;
+            container.appendChild(el);
+            setTimeout(function() {
+                el.classList.replace('toast-enter', 'toast-exit');
+                setTimeout(function() { if (el.parentNode) el.remove(); }, 320);
+            }, 4000);
+        }
+        window.showToast = showToast;
+
+        async function muatDataKaryawan() {
+            try {
+                const snap = await getDocs(collection(db, "karyawan"));
+                const tbody = document.getElementById('tbodyHrd');
+                tbody.innerHTML = '';
+
+                // Update KPI Cards dari data real
+                const deptSet = new Set();
+                const jabatanSet = new Set();
+                snap.forEach(d => {
+                    if (d.data().departemen) deptSet.add(d.data().departemen);
+                    if (d.data().jabatan) jabatanSet.add(d.data().jabatan);
+                });
+                const el = (id, val) => { const e = document.getElementById(id); if(e) e.innerText = val; };
+                el('kpiTotalKaryawan', snap.size);
+                el('kpiTotalDept', deptSet.size);
+                el('kpiTotalJabatan', jabatanSet.size);
+                el('kpiKaryawanAktif', snap.size); // semua dianggap aktif
+
+                if (snap.empty) {
+                    tbody.innerHTML = `
+                        <tr><td colspan="5" class="py-12 text-center">
+                            <i class="fa-solid fa-users text-4xl text-gray-200 mb-3 block"></i>
+                            <p class="text-[14px] font-bold text-gray-400">Belum ada data karyawan</p>
+                            <p class="text-[12px] text-gray-300 mt-1">Klik "Tambah Karyawan" untuk menambah data pertama</p>
+                        </td></tr>`;
+                    return;
+                }
+
+                snap.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const namaAsli = data.nama || '-';
+                    const inisial = namaAsli.charAt(0).toUpperCase();
+                    const namaCapital = namaAsli.charAt(0).toUpperCase() + namaAsli.slice(1);
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50/60 transition">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="w-9 h-9 rounded-full flex items-center justify-center mr-3 font-black text-[13px] shrink-0" style="background:#eff6ff;color:#0055A5;">${inisial}</div>
+                                    <div class="leading-tight">
+                                        <p class="font-bold text-gray-900 text-[13px]">${namaCapital}</p>
+                                        <p class="text-[11px] text-gray-400 mt-0.5">${data.email || '-'}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="font-mono text-[12px] text-gray-500 bg-gray-50 px-2 py-1 rounded">${data.nik || '-'}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="font-bold text-brand-navy text-[13px]">${data.departemen || '-'}</p>
+                                <p class="text-[11px] text-gray-400 mt-0.5">${data.jabatan || '-'}</p>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;">Aktif</span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button onclick="window.location.href='hrd_detail_karyawan.html?id=${docSnap.id}'" class="w-8 h-8 rounded-lg flex items-center justify-center transition" style="background:#f3f4f6;color:#6b7280;" onmouseover="this.style.background='#e5e7eb';" onmouseout="this.style.background='#f3f4f6';" title="Detail"><i class="fa-solid fa-eye text-[12px]"></i></button>
+                                    <button onclick="window.location.href='hrd_edit_karyawan.html?id=${docSnap.id}'" class="w-8 h-8 rounded-lg flex items-center justify-center transition" style="background:#eff6ff;color:#0055A5;" onmouseover="this.style.background='#dbeafe';" onmouseout="this.style.background='#eff6ff';" title="Edit"><i class="fa-solid fa-pen text-[12px]"></i></button>
+                                    <button onclick="window.bukaModalHapus('${docSnap.id}', '${namaCapital}')" class="w-8 h-8 rounded-lg flex items-center justify-center transition" style="background:#fef2f2;color:#dc2626;" onmouseover="this.style.background='#fee2e2';" onmouseout="this.style.background='#fef2f2';" title="Hapus"><i class="fa-solid fa-trash text-[12px]"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error(error);
+                document.getElementById('tbodyHrd').innerHTML = `
+                    <tr><td colspan="5" class="py-10 text-center">
+                        <i class="fa-solid fa-triangle-exclamation text-2xl text-red-300 mb-2 block"></i>
+                        <p class="text-[13px] font-bold text-red-400">Gagal memuat data dari database</p>
+                    </td></tr>`;
+            }
+        }
+
+        // Tombol konfirmasi di dalam modal dipasang handler
+        document.getElementById('btnKonfirmasiHapus').addEventListener('click', async function() {
+            if (!idHapusPending) return;
+            this.disabled = true;
+            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menghapus...';
+            try {
+                await deleteDoc(doc(db, "karyawan", idHapusPending));
+                tutupModalHapus();
+                showToast('Data karyawan berhasil dihapus', 'success');
+                await muatDataKaryawan();
+            } catch (error) {
+                showToast('Gagal menghapus: ' + error.message, 'error');
+            } finally {
+                this.disabled = false;
+                this.innerHTML = '<i class="fa-solid fa-trash mr-2"></i> Ya, Hapus';
+            }
+        });
+    </script>
+</body>
+</html>
+

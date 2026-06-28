@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Saya - FoodSync HRMS</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { navy: '#003B73', light: '#0055A5' },
+                        background: { main: '#F4F7F9' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background-main font-sans text-gray-800 flex flex-col h-screen overflow-hidden">
+
+    <!-- HEADER MINIMALIS -->
+    <header class="h-[64px] bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0 z-10">
+        <div class="flex items-center">
+            <img src="logo.png" alt="Logo" class="h-6 object-contain mr-8">
+            <h1 class="text-[18px] font-extrabold text-brand-navy">Profil Saya</h1>
+        </div>
+        <div class="flex items-center space-x-5">
+            <button onclick="window.history.back()" class="text-sm font-bold text-gray-500 hover:text-brand-navy"><i class="fa-solid fa-arrow-left mr-2"></i>Kembali</button>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-auto bg-[#F4F7F9] p-8">
+        <div class="max-w-[1000px] mx-auto">
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 mb-6 relative">
+                <h3 class="text-[14px] font-extrabold text-gray-900 mb-8 border-b border-gray-100 pb-4">Informasi Pribadi</h3>
+                
+                <div class="flex flex-col md:flex-row items-start gap-12">
+                    
+                    <!-- FOTO KIRI -->
+                    <div class="flex flex-col items-center w-full md:w-48 shrink-0">
+                        <div class="w-36 h-36 rounded-full bg-[#E5F0FA] flex items-center justify-center mb-5 overflow-hidden border-2 border-blue-50 shadow-inner">
+                            <i class="fa-regular fa-user text-5xl text-blue-200"></i>
+                        </div>
+                    </div>
+
+                    <!-- DATA KANAN -->
+                    <div class="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
+                        <div class="md:col-span-2">
+                            <p class="text-[11px] text-gray-400 font-semibold mb-1">Nama Lengkap</p>
+                            <p id="profNama" class="text-[15px] font-bold text-gray-900">Memuat...</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <p class="text-[11px] text-gray-400 font-semibold mb-1">Email</p>
+                            <p id="profEmail" class="text-[15px] font-bold text-gray-900">Memuat...</p>
+                        </div>
+                        <div class="md:col-span-2 border-b border-gray-100 pb-2 mb-2">
+                            <p class="text-[11px] text-gray-400 font-semibold mb-1">No. Telpon</p>
+                            <p class="text-[15px] font-bold text-gray-900">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[11px] text-gray-400 font-semibold mb-1">Departemen</p>
+                            <p class="text-[15px] font-bold text-gray-900">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[11px] text-gray-400 font-semibold mb-1">Jabatan</p>
+                            <p id="profRole" class="text-[15px] font-extrabold text-brand-navy">Memuat...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8", authDomain: "modul-hr-c889c.firebaseapp.com", projectId: "modul-hr-c889c", storageBucket: "modul-hr-c889c.firebasestorage.app", messagingSenderId: "422365405521", appId: "1:422365405521:web:79e314f0c8b54161dc3370" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                document.getElementById('profEmail').innerText = user.email;
+                let role = localStorage.getItem('userRole') || 'Karyawan';
+                document.getElementById('profRole').innerText = role.toUpperCase();
+                
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const nama = docSnap.data().namaLengkap || docSnap.data().name || user.email.split('@')[0];
+                        document.getElementById('profNama').innerText = nama;
+                        if(docSnap.data().role) {
+                            document.getElementById('profRole').innerText = docSnap.data().role.toUpperCase();
+                        }
+                    } else {
+                        document.getElementById('profNama').innerText = user.email.split('@')[0];
+                    }
+                } catch(e) {
+                    console.error("Error fetching user data:", e);
+                    document.getElementById('profNama').innerText = user.email.split('@')[0];
+                }
+            } else {
+                window.location.replace('index.html');
+            }
+        });
+    </script>
+</body>
+</html>

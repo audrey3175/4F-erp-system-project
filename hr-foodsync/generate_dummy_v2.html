@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Dummy V2 - FoodSync HRMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] }, colors: { brand: { navy: '#003B73', light: '#0055A5' } } } } }
+    </script>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-6 font-sans">
+
+    <div class="bg-white rounded-3xl shadow-xl w-full max-w-3xl overflow-hidden border border-gray-100">
+        <div class="bg-brand-navy p-6 text-white text-center">
+            <h1 class="text-2xl font-black tracking-tight"><i class="fa-solid fa-database mr-2"></i> FoodSync Dummy Generator V2</h1>
+            <p class="text-blue-200 mt-2 text-sm">Menyiapkan data presentasi realistis (6 Bulan ke belakang)</p>
+        </div>
+        
+        <div class="p-8">
+            <div class="bg-blue-50 border border-blue-200 text-brand-navy p-4 rounded-xl text-sm mb-6 shadow-sm">
+                <p class="font-bold mb-2"><i class="fa-solid fa-circle-info mr-1"></i> Informasi Sistem:</p>
+                <ul class="list-disc ml-5 space-y-1">
+                    <li>Akun login utama (Firebase Auth) dan data <b>users</b> Anda <b class="text-green-600">TIDAK AKAN DIHAPUS</b>.</li>
+                    <li>Collection <b>karyawan, absensi, cuti, reimbursement</b> lama akan dibersihkan.</li>
+                    <li>Sistem <b>HANYA</b> akan menggunakan akun-akun asli yang sudah Anda daftarkan di aplikasi. Tidak ada akun dummy palsu yang dibuat, sehingga setiap data dijamin bisa Anda akses/login untuk keperluan demo.</li>
+                    <li>Total data yang di-generate: Ratusan hingga ribuan dokumen (tergantung jumlah akun Anda) menggunakan Batch Processing.</li>
+                </ul>
+            </div>
+
+            <button id="btnStart" class="w-full bg-brand-light hover:bg-brand-navy text-white font-black py-4 rounded-2xl transition-all shadow-lg text-lg flex justify-center items-center">
+                <i class="fa-solid fa-rocket mr-3"></i> Mulai Generate Data Presentasi
+            </button>
+
+            <div class="mt-6 bg-gray-900 rounded-xl p-5 shadow-inner">
+                <div class="flex justify-between items-center mb-3 border-b border-gray-700 pb-2">
+                    <span class="text-gray-400 font-bold text-xs uppercase tracking-widest">Progress Log</span>
+                    <span id="statusBadge" class="bg-gray-700 text-gray-300 text-[10px] px-2 py-1 rounded font-bold">READY</span>
+                </div>
+                <div id="logConsole" class="text-green-400 font-mono text-[13px] h-[300px] overflow-y-auto whitespace-pre-wrap leading-relaxed">Menunggu instruksi...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, writeBatch, deleteDoc, addDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8",
+            authDomain: "modul-hr-c889c.firebaseapp.com",
+            projectId: "modul-hr-c889c",
+            storageBucket: "modul-hr-c889c.firebasestorage.app",
+            messagingSenderId: "422365405521",
+            appId: "1:422365405521:web:79e314f0c8b54161dc3370"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const logEl = document.getElementById('logConsole');
+        const badge = document.getElementById('statusBadge');
+        const btnStart = document.getElementById('btnStart');
+
+        function log(msg) {
+            const time = new Date().toLocaleTimeString('id-ID');
+            logEl.innerHTML += `[${time}] ${msg}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function generateRandomId() {
+            return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        }
+
+        btnStart.addEventListener('click', async () => {
+            btnStart.disabled = true;
+            btnStart.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-3"></i> Memproses... Jangan tutup halaman ini!';
+            btnStart.classList.replace('bg-brand-light', 'bg-gray-400');
+            badge.innerText = 'PROCESSING';
+            badge.className = 'bg-yellow-500 text-white text-[10px] px-2 py-1 rounded font-bold animate-pulse';
+            logEl.innerHTML = '';
+
+            try {
+                // ==========================================
+                // 1. FETCH USERS EKSISTING
+                // ==========================================
+                log("Membaca collection 'users' eksisting...");
+                const usersSnap = await getDocs(collection(db, "users"));
+                let existingUsers = [];
+                usersSnap.forEach(d => existingUsers.push({ id: d.id, ...d.data() }));
+                log(`Ditemukan ${existingUsers.length} akun utama.`);
+
+                // ==========================================
+                // 2. CLEAR COLLECTION OPERASIONAL
+                // ==========================================
+                const collectionsToClear = ["karyawan", "absensi", "cuti", "reimbursement"];
+                
+                for (let col of collectionsToClear) {
+                    log(`Mulai menghapus data lama di '${col}'...`);
+                    const snap = await getDocs(collection(db, col));
+                    let batch = writeBatch(db);
+                    let count = 0;
+                    let deletedTotal = 0;
+
+                    for (let document of snap.docs) {
+                        batch.delete(document.ref);
+                        count++;
+                        deletedTotal++;
+                        if (count === 500) {
+                            await batch.commit();
+                            batch = writeBatch(db);
+                            count = 0;
+                            log(`...menghapus ${deletedTotal} dokumen ${col}`);
+                        }
+                    }
+                    if (count > 0) {
+                        await batch.commit();
+                        log(`...menghapus ${deletedTotal} dokumen ${col}`);
+                    }
+                    log(`Selesai membersihkan '${col}'.`);
+                }
+
+                // ==========================================
+                // 3. SIAPKAN TARGET KARYAWAN
+                // ==========================================
+                const depts = ["Kitchen", "HR", "Finance", "Purchasing", "Sales", "Warehouse", "Marketing"];
+                const jabatans = ["Staff", "Officer", "Coordinator", "Specialist", "Senior Staff"];
+                const pendidikans = ["SMA/SMK", "D3", "S1", "S2"];
+                
+                // HANYA menggunakan akun yang benar-benar ada di database users (bisa login)
+                let targetKaryawanList = [...existingUsers]; 
+                
+                if (targetKaryawanList.length === 0) {
+                    throw new Error("Tidak ada akun di collection 'users'. Silakan register akun terlebih dahulu lewat halaman Login.");
+                }
+
+                // ==========================================
+                // 4. GENERATE DATA: Karyawan, Absensi, Cuti, Reimbursement
+                // ==========================================
+                let batch = writeBatch(db);
+                let opsCount = 0;
+                let stats = { karyawan: 0, absensi: 0, cuti: 0, reimbursement: 0 };
+
+                async function commitBatchIfNeeded() {
+                    if (opsCount >= 450) {
+                        await batch.commit();
+                        batch = writeBatch(db);
+                        opsCount = 0;
+                        log(`...Batch di-commit. Terus memproses...`);
+                    }
+                }
+
+                log(`Memulai proses generate data operasional selama 6 bulan...`);
+                
+                for (let user of targetKaryawanList) {
+                    // Generate Master Data Karyawan
+                    const dep = depts[Math.floor(Math.random() * depts.length)];
+                    const jab = jabatans[Math.floor(Math.random() * jabatans.length)];
+                    const edu = pendidikans[Math.floor(Math.random() * pendidikans.length)];
+                    const jk = Math.random() > 0.5 ? "Laki-laki" : "Perempuan";
+                    const gaji = (Math.floor(Math.random() * 8) + 4) * 1000000; // 4jt - 11jt
+                    const isKaryawanRole = user.role === "Karyawan";
+
+                    const karyawanRef = doc(collection(db, "karyawan"));
+                    batch.set(karyawanRef, {
+                        nama: user.namaLengkap || user.email.split('@')[0],
+                        email: user.email,
+                        nik: "FS" + Math.floor(1000 + Math.random() * 9000),
+                        departemen: dep,
+                        jabatan: isKaryawanRole ? jab : user.role, // Jika admin, jabatannya sesuai role
+                        jenisKelamin: jk,
+                        pendidikan: edu,
+                        gajiPokok: gaji,
+                        tglGabung: "2023-01-15",
+                        createdAt: new Date().toISOString()
+                    });
+                    opsCount++; stats.karyawan++;
+                    await commitBatchIfNeeded();
+
+                    // Generate Data Bulanan (Jan - Jun 2026)
+                    for (let bulan = 1; bulan <= 6; bulan++) {
+                        const blnStr = String(bulan).padStart(2, "0");
+                        
+                        // 1. REIMBURSEMENT (2 per bulan)
+                        for(let r=0; r<2; r++) {
+                            const rCat = ["Transport", "Makan", "Hotel", "Operasional", "Internet", "ATK"][Math.floor(Math.random()*6)];
+                            const randStatus = Math.random();
+                            let s = "DISETUJUI";
+                            if(randStatus > 0.85) s = "DITOLAK";
+                            else if(randStatus > 0.55) s = "MENUNGGU";
+
+                            const rRef = doc(collection(db, "reimbursement"));
+                            batch.set(rRef, {
+                                email: user.email,
+                                kategori: rCat,
+                                judul: `Klaim ${rCat} Bulan ${blnStr}`,
+                                nominal: (Math.floor(Math.random() * 20) + 5) * 50000,
+                                catatan: `Keperluan operasional tim ${dep}`,
+                                status: s,
+                                createdAt: `2026-${blnStr}-10T09:30:00.000Z`,
+                                namaFile: Math.random() > 0.5 ? `bukti_${rCat.toLowerCase()}.pdf` : null
+                            });
+                            opsCount++; stats.reimbursement++;
+                            await commitBatchIfNeeded();
+                        }
+
+                        // 2. CUTI (1 kali per bulan pada bulan ganjil/genap)
+                        if (bulan % 2 === (Math.random() > 0.5 ? 1 : 0)) {
+                            const cTypes = ["Cuti Tahunan", "Sakit", "Keperluan Pribadi"];
+                            const cType = cTypes[Math.floor(Math.random()*cTypes.length)];
+                            const cStatus = Math.random() > 0.4 ? "DISETUJUI" : (Math.random() > 0.5 ? "DIPROSES" : "DITOLAK");
+                            
+                            const cRef = doc(collection(db, "cuti"));
+                            batch.set(cRef, {
+                                email: user.email,
+                                jenis: cType,
+                                tglMulai: `2026-${blnStr}-15`,
+                                tglSelesai: `2026-${blnStr}-16`,
+                                durasi: 2,
+                                alasan: `Keperluan ${cType}`,
+                                status: cStatus,
+                                createdAt: `2026-${blnStr}-05T10:15:00.000Z`
+                            });
+                            opsCount++; stats.cuti++;
+                            await commitBatchIfNeeded();
+                        }
+
+                        // 3. ABSENSI (Hanya hari kerja 1-28)
+                        for (let hari = 1; hari <= 28; hari++) {
+                            const dateObj = new Date(`2026-${blnStr}-${String(hari).padStart(2, "0")}T00:00:00`);
+                            const dayOfWeek = dateObj.getDay();
+                            
+                            // Skip Sabtu (6) dan Minggu (0)
+                            if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+                            const chance = Math.random();
+                            // 5% Tidak Hadir -> Skip record
+                            if (chance < 0.05) continue;
+
+                            let inTime = "07:50";
+                            let statusAbsen = "Tepat Waktu";
+
+                            // 20% Terlambat
+                            if (chance > 0.75) {
+                                const telatMins = Math.floor(Math.random() * 40) + 1; // 1-40 menit
+                                inTime = `08:${String(telatMins).padStart(2, "0")}`;
+                                statusAbsen = "Terlambat";
+                            } else {
+                                const awalMins = Math.floor(Math.random() * 15) + 40; // 40-55
+                                inTime = `07:${String(awalMins).padStart(2, "0")}`;
+                            }
+
+                            const outMins = Math.floor(Math.random() * 30);
+                            const outTime = `17:${String(outMins).padStart(2, "0")}`;
+                            const tglStr = `2026-${blnStr}-${String(hari).padStart(2, "0")}`;
+
+                            const absRef = doc(collection(db, "absensi"));
+                            batch.set(absRef, {
+                                email: user.email,
+                                tgl: tglStr,
+                                dateKey: tglStr,
+                                in: inTime,
+                                out: outTime,
+                                status: statusAbsen,
+                                timestamp: Date.parse(`${tglStr}T${inTime}:00`)
+                            });
+                            opsCount++; stats.absensi++;
+                            await commitBatchIfNeeded();
+                        }
+                    }
+                }
+
+                // Final commit
+                if (opsCount > 0) {
+                    await batch.commit();
+                }
+
+                log(`\n================================`);
+                log(`🚀 PROSES SELESAI DENGAN SUKSES!`);
+                log(`================================`);
+                log(`Rekap Data yang dibuat:`);
+                log(`- Master Karyawan : ${stats.karyawan}`);
+                log(`- Riwayat Absensi : ${stats.absensi}`);
+                log(`- Pengajuan Cuti  : ${stats.cuti}`);
+                log(`- Reimbursement   : ${stats.reimbursement}`);
+                
+                badge.innerText = 'SUCCESS';
+                badge.className = 'bg-green-500 text-white text-[10px] px-2 py-1 rounded font-bold';
+                
+                btnStart.innerHTML = '<i class="fa-solid fa-check mr-3"></i> Data Dummy Berhasil Dibuat!';
+                btnStart.classList.replace('bg-gray-400', 'bg-green-600');
+
+            } catch (error) {
+                console.error(error);
+                log(`\n❌ ERROR KRITIKAL: ${error.message}`);
+                badge.innerText = 'ERROR';
+                badge.className = 'bg-red-500 text-white text-[10px] px-2 py-1 rounded font-bold';
+                
+                btnStart.disabled = false;
+                btnStart.innerHTML = '<i class="fa-solid fa-rotate-right mr-3"></i> Coba Lagi';
+                btnStart.classList.replace('bg-gray-400', 'bg-red-600');
+            }
+        });
+
+    </script>
+</body>
+</html>

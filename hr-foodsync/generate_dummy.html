@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Generate Dummy HR</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto}
+button{padding:12px 20px;margin-right:10px;font-size:16px;cursor:pointer}
+#log{margin-top:20px;white-space:pre-line;background:#f4f4f4;padding:15px;border-radius:8px}
+</style>
+</head>
+<body>
+<h2>FoodSync HRMS - Generate Dummy</h2>
+<button id="btn">Generate Dummy</button>
+<div id="log">Siap...</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyBZwROiuKK7spW5EZXAnmaaRg1SXvcQSP8",
+ authDomain:"modul-hr-c889c.firebaseapp.com",
+ projectId:"modul-hr-c889c",
+ storageBucket:"modul-hr-c889c.firebasestorage.app",
+ messagingSenderId:"422365405521",
+ appId:"1:422365405521:web:79e314f0c8b54161dc3370"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+const log=document.getElementById("log");
+
+document.getElementById("btn").onclick=async()=>{
+
+log.innerHTML="Mengambil data user...";
+
+const snap=await getDocs(collection(db,"users"));
+
+const users=[];
+snap.forEach(d=>users.push(d.data()));
+
+if(users.length===0){
+ alert("Collection users kosong!");
+ return;
+}
+
+let absen=0,cuti=0,reimb=0;
+
+for(const user of users){
+
+ const email=user.email;
+
+ for(let bulan=1;bulan<=6;bulan++){
+
+  const bln=String(bulan).padStart(2,"0");
+
+  await addDoc(collection(db,"reimbursement"),{
+   email,
+   kategori:"Transportasi",
+   judul:`Operasional Bulan ${bln}`,
+   nominal:(Math.floor(Math.random()*4)+1)*50000,
+   catatan:"BBM & Parkir",
+   status:"DISETUJUI",
+   createdAt:`2026-${bln}-10T10:00:00.000Z`
+  });
+  reimb++;
+
+  if(bulan===3||bulan===6){
+   await addDoc(collection(db,"cuti"),{
+    email,
+    jenis:"Cuti Tahunan",
+    tglMulai:`2026-${bln}-15`,
+    tglSelesai:`2026-${bln}-16`,
+    durasi:2,
+    alasan:"Urusan Keluarga",
+    status:"DISETUJUI",
+    createdAt:`2026-${bln}-05T10:00:00.000Z`
+   });
+   cuti++;
+  }
+
+  for(let hari=1;hari<=25;hari++){
+
+   if(hari%6===0||hari%7===0) continue;
+
+   const hr=String(hari).padStart(2,"0");
+   const tgl=`2026-${bln}-${hr}`;
+   const telat=Math.random()<0.15;
+   const jamMasuk=telat?"08:15":"07:45";
+
+   await addDoc(collection(db,"absensi"),{
+    email,
+    tgl:tgl,
+    dateKey:tgl,
+    in:jamMasuk,
+    out:"17:05",
+    status:telat?"Terlambat":"Tepat Waktu",
+    timestamp:Date.parse(`${tgl}T${jamMasuk}:00`)
+   });
+
+   absen++;
+  }
+ }
+
+ log.innerHTML=`Sedang membuat data...
+User diproses: ${email}
+Absensi: ${absen}
+Cuti: ${cuti}
+Reimbursement: ${reimb}`;
+}
+
+log.innerHTML=`✅ SELESAI
+
+Total Absensi : ${absen}
+Total Cuti : ${cuti}
+Total Reimbursement : ${reimb}`;
+
+alert("Dummy berhasil dibuat!");
+};
+</script>
+</body>
+</html>
